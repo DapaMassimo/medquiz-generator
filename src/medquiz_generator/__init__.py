@@ -1,0 +1,1 @@
+"""medquiz-generator package."""
