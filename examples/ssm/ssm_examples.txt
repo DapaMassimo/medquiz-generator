@@ -1,0 +1,56 @@
+SSM 2026 quesiti: le prime 5 domande commentate
+Domanda 1
+
+Un uomo di 50 anni si presenta in ambulatorio lamentando difficoltà nella deglutizione da circa 6 mesi. Riferisce che il problema si manifesta prevalentemente con i liquidi, mentre i cibi solidi sono deglutiti con minor difficoltà (disfagia paradossa). Negli ultimi due mesi, ha perso circa 5 kg. Non riferisce dolore toracico, rigurgito o pirosi retrosternale, ma riferisce una sensazione di “cibo bloccato” in regione retrosternale media. La radiografia del torace è negativa, l’esofagogramma con bario evidenzia un esofago dilatato con restringimento “a coda di topo” al livello della giunzione gastroesofagea. Per quale tra le seguenti diagnosi depone con maggiore probabilità il quadro clinico-radiologico rappresentato?
+
+    ☑ A: Acalasia esofagea (risposta corretta)
+    ☐ B: Stenosi organica dell’esofago distale
+    ☐ C: Malformazione dell’esofago
+    ☐ D: Sindrome di Mallory-Weiss
+    ☐ E: Stenosi esofagea distale neoplastica
+
+Commento: La diagnosi di acalasia esofagea si basa su un quadro clinico-radiologico tipico: disfagia paradossa (più marcata per i liquidi che per i solidi), calo ponderale e, all’esofagogramma con bario, il caratteristico aspetto “a becco d’uccello” (o “a coda di topo”) a livello della giunzione esofago-gastrica. Il quadro è dovuto al mancato rilasciamento dello sfintere esofageo inferiore associato ad aperistalsi del corpo esofageo, per degenerazione del plesso mioenterico di Auerbach. La manometria esofagea ad alta risoluzione è l’esame di conferma diagnostica. Nei pazienti con calo ponderale significativo è comunque sempre indicata l’endoscopia digestiva alta, per escludere una pseudoacalasia secondaria a neoplasia della giunzione gastroesofagea.
+Domanda 2
+
+Una donna di 55 anni si presenta in ambulatorio riferendo dolori ossei diffusi da circa 6 mesi. Riferisce, inoltre, episodi ricorrenti di nausea e poliuria. L’anamnesi è negativa per patologie significative, ma segnala una recente frattura del radio sinistro in seguito a una banale caduta. Gli esami di laboratorio e strumentali depongono per la diagnosi di iperparatiroidismo primitivo (evidenza di lesione ben capsulata della paratiroide superiore destra suggestiva per adenoma paratiroideo). Quale tra i seguenti è il trattamento indicato per l’iperparatiroidismo primitivo?
+
+    ☑ A: Paratiroidectomia chirurgica mirata (risposta corretta)
+    ☐ B: Terapia Radiante del collo
+    ☐ C: Farmaci Antiparatiroidei per 6 mesi e successiva rivalutazione
+    ☐ D: Dieta povera di Calcio e calcioantagonisti
+    ☐ E: Somministrazione di Radioisotopi in ambiente protetto
+
+Commento: Nell’iperparatiroidismo primitivo sintomatico, con manifestazioni ossee (come la frattura da fragilità) e renali (poliuria da ipercalciuria), sostenuto da un adenoma singolo ben localizzato, il trattamento di scelta è la paratiroidectomia chirurgica mirata (minimamente invasiva). L’intervento viene preceduto da un’accurata localizzazione preoperatoria (ecografia del collo e scintigrafia con Sestamibi) e guidato intraoperatoriamente dal dosaggio rapido del PTH, per confermare la radicalità dell’asportazione dell’adenoma.
+Domanda 3
+
+Un uomo di 45 anni si presenta in Pronto Soccorso, dopo una caduta, con una ferita lacero-contusa del braccio destro. La ferita è lunga circa 6 cm, con bordi netti e moderata contaminazione da terriccio. Non vi sono segni di lesioni di muscoli o di strutture vascolo-nervose. L’anamnesi è negativa per diabete o altre patologie significative. Il paziente è in regola con la vaccinazione antitetanica. La ferita viene trattata con detersione accurata con soluzione fisiologica e soluzione antisettica, i margini della ferita vengono accostati e suturati. La chiusura di una ferita con sutura è definita:
+
+    ☑ A: Chiusura per prima intenzione (risposta corretta)
+    ☐ B: Chiusura per seconda intenzione
+    ☐ C: Granulazione spontanea
+    ☐ D: Accostamento fisiologico dei margini
+    ☐ E: Accostamento forzato dei margini
+
+Commento: La chiusura per prima intenzione consiste nell’accostamento chirurgico immediato dei margini di una ferita pulita o pulita-contaminata, mediante sutura, entro poche ore dal trauma: permette una guarigione rapida, con minima formazione di tessuto di granulazione e una cicatrice lineare. Si differenzia dalla chiusura per seconda intenzione, riservata alle ferite molto contaminate o infette, che vengono lasciate aperte a guarire spontaneamente per granulazione e successiva riepitelizzazione.
+Domanda 4
+
+Una donna di 48 anni si presenta per una visita senologica dopo aver scoperto un nodulo palpabile (autopalpazione) nel quadrante superiore esterno della mammella destra. La mammografia conferma la presenza di un nodulo singolo “spiculato” di circa 2,5 cm. Durante l’esame clinico, si apprezzano linfonodi ascellari omolaterali palpabili, non dolenti. I linfonodi ascellari di secondo livello sono situati:
+
+    ☑ A: Posteriormente al muscolo piccolo pettorale (risposta corretta)
+    ☐ B: Lateralmente al muscolo piccolo pettorale
+    ☐ C: Lungo tutto il decorso dell’arteria ascellare
+    ☐ D: All’apice del cavo ascellare
+    ☐ E: Medialmente al muscolo piccolo pettorale
+
+Commento: La classificazione di Berg suddivide i linfonodi ascellari in tre livelli in base al rapporto con il muscolo piccolo pettorale: il livello I è laterale (inferiore/esterno) rispetto al muscolo, il livello II è posteriore, cioè situato dietro il muscolo piccolo pettorale, e il livello III è mediale/apicale, al di sopra e medialmente al suo margine superiore. Questa distinzione topografica è fondamentale per la stadiazione chirurgica del carcinoma mammario e per la pianificazione della dissezione ascellare.
+Domanda 5
+
+Un paziente di 40 anni con indice di massa corporea di 35 viene sottoposto agli accertamenti preoperatori di routine per successivo intervento di chirurgia bariatrica mini-invasiva. All’endoscopia preoperatoria viene riscontrata la presenza di un’ernia iatale di tipo 1 con quadro deponente per esofago di Barrett confermato istologicamente (assenza di displasia). Quale intervento chirurgico bariatrico/metabolico è più raccomandato tra i seguenti?
+
+    ☑ A: By-pass gastrico con ansa alla Roux con contestuale riparazione dell’ernia iatale (risposta corretta)
+    ☐ B: Bendaggio gastrico regolabile senza riparazione dell’ernia iatale
+    ☐ C: Sleeve gastrectomy con riparazione dell’ernia iatale
+    ☐ D: One Anastomosis Gastric Bypass (OAGB) senza riparazione del difetto iatale
+    ☐ E: Single Anastomosis Duodeno-Ileal bypass SADI-S
+
+Commento: In presenza di esofago di Barrett, anche in assenza di displasia, la sleeve gastrectomy è sconsigliata perché può aggravare il reflusso gastroesofageo e favorire la progressione della metaplasia. Il bypass gastrico con ansa alla Roux (RYGB) è invece l’intervento bariatrico di scelta in questi pazienti, poiché riduce l’esposizione acida dell’esofago residuo, e va sempre associato alla riparazione contestuale dell’ernia iatale per ottimizzare il controllo del reflusso.

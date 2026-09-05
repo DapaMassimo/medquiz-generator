@@ -1,0 +1,138 @@
+"""Stage 4 — generate: one structured LLM call per plan unit → QuizItems (status generated).
+
+Resumable: units already present in ``questions.generated.json`` are skipped and the artefact
+is re-saved after every unit, so an interrupted run resumes where it stopped.
+"""
+
+from __future__ import annotations
+
+from medquiz_generator.application import artifacts
+from medquiz_generator.application.context import RunContext
+from medquiz_generator.domain.models import (
+    GeneratedQuestion,
+    GenerationPlan,
+    ModelMetadata,
+    PlanUnit,
+    QuizItem,
+    Section,
+    SectionLabel,
+    SourceRef,
+    SsmExample,
+    Stage,
+    StructuredDocument,
+    Taxonomy,
+)
+from medquiz_generator.domain.ports import QuestionGenerator
+from medquiz_generator.domain.text import contains_normalized
+
+
+def pick_source_section(question: GeneratedQuestion, sections: list[Section]) -> Section:
+    """The section whose text contains the quote; falls back to the page, then the first."""
+    for section in sections:
+        if contains_normalized(section.text, question.quote):
+            return section
+    if question.page is not None:
+        for section in sections:
+            if section.page_start <= question.page <= section.page_end:
+                return section
+    return sections[0]
+
+
+def to_quiz_item(
+    question: GeneratedQuestion,
+    *,
+    item_id: str,
+    unit: PlanUnit,
+    sections: list[Section],
+    label: SectionLabel | None,
+    model: str,
+    run_id: str,
+) -> QuizItem:
+    section = pick_source_section(question, sections)
+    return QuizItem(
+        id=item_id,
+        materia=label.subject if label else "",
+        argomento=label.topic if label else section.title,
+        question=question.question.strip(),
+        options=question.options,
+        correct_option_id=question.correct_option_id,
+        explanation=question.explanation.strip(),
+        difficulty=question.difficulty,
+        source=SourceRef(
+            section_id=section.id,
+            section_title=section.title,
+            section_path=section.path_str,
+            page_start=section.page_start,
+            page_end=section.page_end,
+            page=question.page,
+            quote=question.quote.strip(),
+        ),
+        model_metadata=ModelMetadata(model=model, run_id=run_id, unit_id=unit.id),
+    )
+
+
+class GenerateStage:
+    def __init__(
+        self,
+        generator: QuestionGenerator,
+        examples: list[SsmExample],
+        *,
+        max_examples: int = 5,
+    ) -> None:
+        self._generator = generator
+        self._examples = examples[:max_examples]
+
+    def run(self, ctx: RunContext, *, unit_ids: list[str] | None = None) -> list[QuizItem]:
+        with ctx.stage(Stage.GENERATE):
+            document = ctx.require(artifacts.DOCUMENT, StructuredDocument)
+            plan = ctx.require(artifacts.PLAN, GenerationPlan)
+            taxonomy = ctx.require(artifacts.TAXONOMY, Taxonomy)
+            items: list[QuizItem] = (
+                ctx.store.load_list(ctx.run_id, artifacts.QUESTIONS_GENERATED, QuizItem)
+                if ctx.store.exists(ctx.run_id, artifacts.QUESTIONS_GENERATED)
+                else []
+            )
+            done_units = {item.model_metadata.unit_id for item in items}
+            if not self._examples:
+                ctx.warn("no SSM examples loaded: few-shot disabled")
+
+            for unit in plan.units:
+                if unit.questions <= 0 or unit.id in done_units:
+                    continue
+                if unit_ids is not None and unit.id not in unit_ids:
+                    continue
+                sections = [
+                    s for sid in unit.section_ids if (s := document.section_by_id(sid)) is not None
+                ]
+                if not sections:
+                    ctx.log("unit has no sections in document; skipped", unit_id=unit.id)
+                    continue
+                label = taxonomy.label_for(sections[0].id)
+                ctx.tracker.set_context(unit_id=unit.id)
+                batch = self._generator.generate(
+                    unit, sections, unit.questions, self._examples, label
+                )
+                new_items = [
+                    to_quiz_item(
+                        question,
+                        item_id=f"{unit.id}-q{index:02d}",
+                        unit=unit,
+                        sections=sections,
+                        label=label,
+                        model=self._generator.model_name,
+                        run_id=ctx.run_id,
+                    )
+                    for index, question in enumerate(batch.questions, start=1)
+                ]
+                items.extend(new_items)
+                ctx.store.save_list(ctx.run_id, artifacts.QUESTIONS_GENERATED, list(items))
+                ctx.log(
+                    "unit generated",
+                    unit_id=unit.id,
+                    requested=unit.questions,
+                    produced=len(new_items),
+                )
+            ctx.tracker.set_context()
+            ctx.store.save_list(ctx.run_id, artifacts.QUESTIONS_GENERATED, list(items))
+            ctx.log("generation finished", items=len(items), model=self._generator.model_name)
+        return items
