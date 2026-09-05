@@ -1,0 +1,120 @@
+{
+  "source_path": "tests/fixtures/manuale_fittizio.pdf",
+  "content_hash": "fixture0000000000000000000000000000000000000000000000000000000000",
+  "title": "Manuale di Medicina Interna (estratto didattico fittizio)",
+  "page_count": 6,
+  "parser": "fixture",
+  "parsed_at": "2026-01-01T00:00:00Z",
+  "sections": [
+    {
+      "id": "s000",
+      "title": "Manuale di Medicina Interna (estratto didattico fittizio)",
+      "level": 0,
+      "path": ["Manuale di Medicina Interna (estratto didattico fittizio)"],
+      "parent_id": null,
+      "page_start": 1,
+      "page_end": 1,
+      "text": "Questo estratto raccoglie due capitoli introduttivi pensati per la preparazione al concorso di specializzazione. Ogni capitolo presenta definizioni, criteri diagnostici e principi di terapia in forma sintetica."
+    },
+    {
+      "id": "s001",
+      "title": "Capitolo 1 - Ipertensione arteriosa",
+      "level": 1,
+      "path": ["Manuale di Medicina Interna (estratto didattico fittizio)", "Capitolo 1 - Ipertensione arteriosa"],
+      "parent_id": "s000",
+      "page_start": 1,
+      "page_end": 1,
+      "text": "L'ipertensione arteriosa è la condizione clinica caratterizzata da un aumento persistente dei valori pressori oltre la soglia definita dalle linee guida. Rappresenta uno dei principali fattori di rischio cardiovascolare modificabili ed è spesso asintomatica per molti anni, motivo per cui viene definita un killer silenzioso. La prevalenza aumenta con l'età e con l'eccesso ponderale, e la maggior parte dei casi è classificata come ipertensione essenziale, cioè senza una causa secondaria identificabile."
+    },
+    {
+      "id": "s002",
+      "title": "1.1 Definizione e classificazione",
+      "level": 2,
+      "path": ["Manuale di Medicina Interna (estratto didattico fittizio)", "Capitolo 1 - Ipertensione arteriosa", "1.1 Definizione e classificazione"],
+      "parent_id": "s001",
+      "page_start": 1,
+      "page_end": 2,
+      "text": "Si definisce ipertensione arteriosa il riscontro di una pressione sistolica uguale o superiore a 140 mmHg e/o di una pressione diastolica uguale o superiore a 90 mmHg, misurate in ambulatorio in almeno due occasioni distinte. La pressione viene classificata in ottimale (inferiore a 120/80 mmHg), normale, normale-alta (130-139/85-89 mmHg) e in tre gradi di ipertensione. L'ipertensione di grado 1 corrisponde a valori compresi tra 140-159/90-99 mmHg, il grado 2 a valori tra 160-179/100-109 mmHg e il grado 3 a valori uguali o superiori a 180/110 mmHg. Si parla di ipertensione sistolica isolata quando la sistolica è uguale o superiore a 140 mmHg con diastolica inferiore a 90 mmHg, condizione tipica dell'anziano per la ridotta compliance delle grandi arterie. La classificazione si basa sul valore più alto tra sistolica e diastolica."
+    },
+    {
+      "id": "s003",
+      "title": "1.2 Diagnosi",
+      "level": 2,
+      "path": ["Manuale di Medicina Interna (estratto didattico fittizio)", "Capitolo 1 - Ipertensione arteriosa", "1.2 Diagnosi"],
+      "parent_id": "s001",
+      "page_start": 2,
+      "page_end": 3,
+      "text": "La diagnosi richiede misurazioni ripetute con tecnica corretta: paziente seduto da almeno cinque minuti, bracciale di dimensioni adeguate, braccio all'altezza del cuore e almeno due misurazioni per visita. Il monitoraggio pressorio delle 24 ore (ABPM) è indicato in caso di sospetta ipertensione da camice bianco, di ipertensione mascherata o di marcata variabilità pressoria. Si parla di ipertensione da camice bianco quando i valori sono elevati in ambulatorio ma normali fuori dall'ambiente sanitario; si parla invece di ipertensione mascherata nella situazione opposta. La valutazione iniziale comprende esami di laboratorio di base (glicemia, creatinina con stima del filtrato, elettroliti, profilo lipidico, esame urine con microalbuminuria) e un elettrocardiogramma a dodici derivazioni per la ricerca di ipertrofia ventricolare sinistra. Il danno d'organo va ricercato a livello di cuore, rene, retina e vasi."
+    },
+    {
+      "id": "s004",
+      "title": "1.3 Terapia",
+      "level": 2,
+      "path": ["Manuale di Medicina Interna (estratto didattico fittizio)", "Capitolo 1 - Ipertensione arteriosa", "1.3 Terapia"],
+      "parent_id": "s001",
+      "page_start": 3,
+      "page_end": 3,
+      "text": "Il trattamento si fonda sempre sulle modifiche dello stile di vita: riduzione dell'apporto di sodio, calo ponderale, attività fisica aerobica regolare, moderazione dell'alcol e astensione dal fumo. La terapia farmacologica è indicata nell'ipertensione di grado 2 e 3 e nel grado 1 con rischio cardiovascolare elevato o dopo il fallimento delle misure non farmacologiche. Le classi di prima linea sono gli ACE-inibitori, i sartani, i calcio-antagonisti diidropiridinici e i diuretici tiazidici. Nella maggior parte dei pazienti si raccomanda di iniziare con una combinazione di due farmaci in un'unica compressa, ad esempio un ACE-inibitore con un calcio-antagonista. I beta-bloccanti sono riservati a indicazioni specifiche come la cardiopatia ischemica o lo scompenso cardiaco. L'associazione di ACE-inibitore e sartano è sconsigliata per l'aumento del rischio di iperkaliemia e di insufficienza renale."
+    },
+    {
+      "id": "s005",
+      "title": "Capitolo 2 - Diabete mellito",
+      "level": 1,
+      "path": ["Manuale di Medicina Interna (estratto didattico fittizio)", "Capitolo 2 - Diabete mellito"],
+      "parent_id": "s000",
+      "page_start": 4,
+      "page_end": 4,
+      "text": "Il diabete mellito è un gruppo di malattie metaboliche caratterizzate da iperglicemia cronica dovuta a un difetto della secrezione o dell'azione dell'insulina. Il diabete di tipo 1 è causato dalla distruzione autoimmune delle cellule beta pancreatiche, mentre il tipo 2 associa insulino-resistenza e deficit secretorio relativo."
+    },
+    {
+      "id": "s006",
+      "title": "2.1 Criteri diagnostici",
+      "level": 2,
+      "path": ["Manuale di Medicina Interna (estratto didattico fittizio)", "Capitolo 2 - Diabete mellito", "2.1 Criteri diagnostici"],
+      "parent_id": "s005",
+      "page_start": 4,
+      "page_end": 5,
+      "text": "La diagnosi di diabete si pone in presenza di uno dei seguenti criteri: glicemia a digiuno uguale o superiore a 126 mg/dL confermata in due occasioni, glicemia uguale o superiore a 200 mg/dL due ore dopo carico orale di 75 g di glucosio, emoglobina glicata uguale o superiore al 6,5 per cento, oppure glicemia casuale uguale o superiore a 200 mg/dL in presenza di sintomi tipici come poliuria, polidipsia e calo ponderale. Si definisce alterata glicemia a digiuno il riscontro di valori tra 100 e 125 mg/dL, mentre la ridotta tolleranza al glucosio corrisponde a una glicemia tra 140 e 199 mg/dL due ore dopo il carico. Entrambe le condizioni identificano il prediabete, uno stato di rischio aumentato per lo sviluppo di diabete e di malattia cardiovascolare che merita interventi sullo stile di vita."
+    },
+    {
+      "id": "s007",
+      "title": "2.2 Complicanze",
+      "level": 2,
+      "path": ["Manuale di Medicina Interna (estratto didattico fittizio)", "Capitolo 2 - Diabete mellito", "2.2 Complicanze"],
+      "parent_id": "s005",
+      "page_start": 5,
+      "page_end": 5,
+      "text": "Le complicanze croniche si distinguono in microvascolari, cioè retinopatia, nefropatia e neuropatia, e macrovascolari, cioè cardiopatia ischemica, ictus e arteriopatia periferica. La microalbuminuria è il primo segno di nefropatia diabetica."
+    },
+    {
+      "id": "s008",
+      "title": "2.3 Principi di terapia",
+      "level": 2,
+      "path": ["Manuale di Medicina Interna (estratto didattico fittizio)", "Capitolo 2 - Diabete mellito", "2.3 Principi di terapia"],
+      "parent_id": "s005",
+      "page_start": 5,
+      "page_end": 6,
+      "text": "Nel diabete di tipo 2 la metformina è il farmaco di prima scelta in assenza di controindicazioni, insieme alla dieta e all'attività fisica. Nel diabete di tipo 1 la terapia insulinica è indispensabile fin dalla diagnosi."
+    },
+    {
+      "id": "s009",
+      "title": "Bibliografia essenziale",
+      "level": 1,
+      "path": ["Manuale di Medicina Interna (estratto didattico fittizio)", "Bibliografia essenziale"],
+      "parent_id": "s000",
+      "page_start": 6,
+      "page_end": 6,
+      "text": "Testi di riferimento consigliati per l'approfondimento."
+    },
+    {
+      "id": "s010",
+      "title": "Note",
+      "level": 1,
+      "path": ["Manuale di Medicina Interna (estratto didattico fittizio)", "Note"],
+      "parent_id": "s000",
+      "page_start": 6,
+      "page_end": 6,
+      "text": ""
+    }
+  ]
+}
