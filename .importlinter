@@ -1,0 +1,56 @@
+[importlinter]
+root_package = medquiz_generator
+include_external_packages = True
+
+[importlinter:contract:domain-isolation]
+name = Domain must not depend on outer layers
+type = forbidden
+source_modules =
+    medquiz_generator.domain
+forbidden_modules =
+    medquiz_generator.application
+    medquiz_generator.adapters
+    medquiz_generator.composition
+    medquiz_generator.config
+    medquiz_generator.entrypoints
+
+[importlinter:contract:application-purity]
+name = Application must orchestrate ports only
+type = forbidden
+source_modules =
+    medquiz_generator.application
+forbidden_modules =
+    medquiz_generator.adapters
+    medquiz_generator.composition
+    medquiz_generator.config
+    medquiz_generator.entrypoints
+
+[importlinter:contract:adapters-no-composition]
+name = Adapters must not import composition or entrypoints
+type = forbidden
+source_modules =
+    medquiz_generator.adapters
+forbidden_modules =
+    medquiz_generator.composition
+    medquiz_generator.entrypoints
+
+[importlinter:contract:core-no-frameworks]
+name = Domain and application are framework-free
+type = forbidden
+source_modules =
+    medquiz_generator.domain
+    medquiz_generator.application
+forbidden_modules =
+    docling
+    docling_core
+    langchain
+    langchain_core
+    langchain_openai
+    langchain_anthropic
+    openai
+    anthropic
+    streamlit
+    typer
+    openpyxl
+    torch
+    numpy
