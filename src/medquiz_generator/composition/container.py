@@ -111,6 +111,7 @@ class Container:
             cache_dir=Path(s.docling_cache_dir) if s.docling_cache_dir else None,
             artifacts_path=Path(s.docling_artifacts_path) if s.docling_artifacts_path else None,
             do_ocr=s.docling_do_ocr,
+            ocr_engine=s.docling_ocr_engine,
         )
 
     def _api_key(self) -> str:

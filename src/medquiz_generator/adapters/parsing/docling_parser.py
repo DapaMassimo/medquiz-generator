@@ -26,6 +26,70 @@ log = logging.getLogger(__name__)
 
 _SKIPPED_LABELS = {"page_header", "page_footer", "picture", "caption", "footnote"}
 
+# ------------------------------------------------------------------ model licences
+#
+# Docling fetches model weights at runtime, and their licences are NOT covered by the
+# Python package metadata — a clean `pip-licenses` report says nothing about them. The
+# models this adapter may reach for are therefore pinned and allowlisted here.
+#
+# Cleared for commercial use and redistribution:
+#   docling-project/docling-layout-heron   Apache-2.0             layout (Docling default)
+#   docling-project/docling-models         CDLA-Permissive-2.0    TableFormer V1
+#   RapidOCR / EasyOCR / Tesseract         Apache-2.0             OCR engines
+#
+# Deliberately excluded:
+#   docling-project/TableFormerV2   model card declares no licence at all
+#   datalab-to/chandra-ocr-*        revenue-capped commercial terms
+#   nemotron-ocr, granite-vision    not reviewed
+#
+# A future Docling release may move its own defaults onto any of those, so the choices
+# below are set explicitly rather than inherited, and _assert_allowlisted trips if the
+# resolved configuration ever lands outside the cleared set.
+
+ALLOWED_OCR_ENGINES = ("rapidocr", "easyocr", "tesseract")
+_ALLOWED_TABLE_KIND = "docling_tableformer"  # TableFormer V1
+
+
+def _ocr_options(engine: str) -> Any:
+    """Build OCR options for an allowlisted engine, rejecting anything else."""
+    if engine not in ALLOWED_OCR_ENGINES:
+        raise ParsingError(
+            f"OCR engine {engine!r} is not allowlisted. Use one of "
+            f"{', '.join(ALLOWED_OCR_ENGINES)}: the other Docling backends ship models "
+            "under revenue-capped or undeclared licences."
+        )
+    from docling.datamodel.pipeline_options import (
+        EasyOcrOptions,
+        RapidOcrOptions,
+        TesseractCliOcrOptions,
+    )
+
+    builders: dict[str, type[Any]] = {
+        "rapidocr": RapidOcrOptions,
+        "easyocr": EasyOcrOptions,
+        "tesseract": TesseractCliOcrOptions,
+    }
+    return builders[engine]()
+
+
+def _assert_allowlisted(options: Any, *, do_ocr: bool) -> None:
+    """Tripwire: fail loudly if Docling resolved a model outside the cleared set."""
+    table_kind = getattr(options.table_structure_options, "kind", None)
+    if table_kind != _ALLOWED_TABLE_KIND:
+        raise ParsingError(
+            f"Docling resolved table model {table_kind!r}, but only "
+            f"{_ALLOWED_TABLE_KIND!r} (TableFormer V1) has a licence cleared for "
+            "commercial use. Review the model's licence before allowing it."
+        )
+    if not do_ocr:
+        return
+    ocr_kind = getattr(options.ocr_options, "kind", None)
+    if ocr_kind not in ALLOWED_OCR_ENGINES:
+        raise ParsingError(
+            f"Docling resolved OCR engine {ocr_kind!r}, which is not allowlisted. "
+            f"Allowed: {', '.join(ALLOWED_OCR_ENGINES)}."
+        )
+
 
 def content_hash_of(path: Path) -> str:
     digest = hashlib.sha256()
@@ -35,12 +99,17 @@ def content_hash_of(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _build_converter(artifacts_path: Path | None, do_ocr: bool) -> Any:
+def _build_converter(artifacts_path: Path | None, do_ocr: bool, ocr_engine: str) -> Any:
     from docling.datamodel.base_models import InputFormat
-    from docling.datamodel.pipeline_options import PdfPipelineOptions
+    from docling.datamodel.pipeline_options import PdfPipelineOptions, TableStructureOptions
     from docling.document_converter import DocumentConverter, PdfFormatOption
 
     options = PdfPipelineOptions(do_ocr=do_ocr)
+    # Pinned, not inherited: see the model-licence note above.
+    options.table_structure_options = TableStructureOptions()
+    if do_ocr:
+        options.ocr_options = _ocr_options(ocr_engine)
+    _assert_allowlisted(options, do_ocr=do_ocr)
     if artifacts_path is not None:
         options.artifacts_path = str(artifacts_path)
     return DocumentConverter(
@@ -110,10 +179,12 @@ class DoclingParser:
         cache_dir: Path | None = None,
         artifacts_path: Path | None = None,
         do_ocr: bool = False,
+        ocr_engine: str = "rapidocr",
     ) -> None:
         self._cache = DoclingDocumentCache(cache_dir)
         self._artifacts_path = artifacts_path
         self._do_ocr = do_ocr
+        self._ocr_engine = ocr_engine
         self._converter: Any | None = None
 
     @property
@@ -122,7 +193,7 @@ class DoclingParser:
 
     def _convert(self, pdf_path: Path) -> Any:
         if self._converter is None:
-            self._converter = _build_converter(self._artifacts_path, self._do_ocr)
+            self._converter = _build_converter(self._artifacts_path, self._do_ocr, self._ocr_engine)
         try:
             return self._converter.convert(str(pdf_path)).document
         except Exception as exc:  # normalise any Docling failure

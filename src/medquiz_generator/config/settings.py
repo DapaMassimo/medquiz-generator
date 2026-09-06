@@ -51,6 +51,8 @@ class Settings(BaseSettings):
     docling_cache_dir: str | None = ".cache/docling"
     docling_artifacts_path: str | None = None
     docling_do_ocr: bool = False
+    # Allowlisted engines only (rapidocr / easyocr / tesseract): see docling_parser.py.
+    docling_ocr_engine: str = "rapidocr"
     use_cache: bool = True
 
     # Pipeline knobs
