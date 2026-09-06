@@ -7,6 +7,7 @@ paragraph), so parsing is tolerant: anything that cannot be parsed is skipped, n
 
 from __future__ import annotations
 
+import json
 import logging
 import re
 from pathlib import Path
@@ -95,7 +96,10 @@ def parse_ssm_examples(text: str) -> list[SsmExample]:
 
 
 def load_ssm_examples(path: Path) -> list[SsmExample]:
-    """Load the examples file; a missing/empty file yields [] with a warning (never fatal)."""
+    """Load the examples file (free text ``.txt`` or structured ``.json``).
+
+    A missing/empty file yields [] with a warning (never fatal).
+    """
     if not path.exists():
         log.warning(
             "SSM examples file not found at %s: generating with the style described in the "
@@ -103,16 +107,46 @@ def load_ssm_examples(path: Path) -> list[SsmExample]:
             path,
         )
         return []
-    examples = parse_ssm_examples(path.read_text(encoding="utf-8"))
+    if path.suffix.lower() == ".json":
+        payload = json.loads(path.read_text(encoding="utf-8"))
+        examples = [SsmExample.model_validate(entry) for entry in payload]
+    else:
+        examples = parse_ssm_examples(path.read_text(encoding="utf-8"))
     if not examples:
         log.warning("SSM examples file %s parsed to zero questions: few-shot disabled.", path)
     return examples
 
 
+def rotate_correct_option(example: SsmExample, target_index: int) -> SsmExample:
+    """Return a copy whose correct option sits at ``target_index`` (0 = A), preserving the
+    relative order of the other options and relabelling ids A-E.
+
+    Real exam dumps often list the correct answer first; showing that pattern as few-shot
+    teaches the model to always pick A. Rotating removes the positional bias.
+    """
+    options = list(example.options)
+    if example.correct_option_id is None or len(options) != len(OPTION_IDS):
+        return example
+    current = next(i for i, o in enumerate(options) if o.id == example.correct_option_id)
+    shift = (current - target_index) % len(options)
+    rotated = options[shift:] + options[:shift]
+    relabelled = [
+        Option(id=oid, text=option.text) for oid, option in zip(OPTION_IDS, rotated, strict=True)
+    ]
+    return example.model_copy(
+        update={"options": relabelled, "correct_option_id": OPTION_IDS[target_index]}
+    )
+
+
 def format_examples(examples: list[SsmExample], max_examples: int | None = None) -> str:
-    """Render examples as few-shot text (Italian content, as in the real exam)."""
+    """Render examples as few-shot text (Italian content, as in the real exam).
+
+    The correct option position rotates across examples (A, B, C, D, E, A...) so the few-shot
+    block never suggests that one letter is systematically the right one.
+    """
     chunks: list[str] = []
-    for example in examples[:max_examples]:
+    for index, original in enumerate(examples[:max_examples]):
+        example = rotate_correct_option(original, index % len(OPTION_IDS))
         lines = [f"Domanda {example.number}", example.question, ""]
         for option in example.options:
             marker = "[corretta]" if option.id == example.correct_option_id else ""

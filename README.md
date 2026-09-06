@@ -17,7 +17,10 @@ explanations) is in Italian.
   are extracted from the document structure and normalised by an LLM; every question inherits
   its labels from its source section. The taxonomy is a run deliverable (`taxonomy.json`).
 - **SSM style** — clinical vignette where the content allows it, 5 options (A–E), one correct,
-  2–4 sentence explanation, few-shot on real exam questions (`examples/ssm/ssm_examples.txt`).
+  2–4 sentence explanation, few-shot on real exam questions (`examples/ssm/ssm_examples.txt`,
+  also available as structured `ssm_examples.json`). The correct option position is rotated
+  across the few-shot examples so the model never learns "the answer is always A"; the run
+  report shows the distribution of correct options among delivered questions.
 - **Anti-hallucination, two levels** — deterministic checks (5 distinct non-empty options,
   one correct, quote *really* present in the section text with whitespace/punctuation-normalised
   matching, page in range) and an **independent LLM judge** that sees only the cited passage.
@@ -152,7 +155,7 @@ Discarded questions never reach an export; flagged ones only with `--include-fla
 | `MQ_EMBEDDING_MODEL` | `text-embedding-3-small` | Dedup embeddings |
 | `MQ_LLM_TEMPERATURE` | `0.1` | Low temperature for all structured calls |
 | `MQ_RUNS_DIR` / `MQ_GOLDEN_DIR` | `runs` / `golden` | Artefacts and promoted golden items |
-| `MQ_EXAMPLES_PATH` | `examples/ssm/ssm_examples.txt` | Few-shot + style golden set |
+| `MQ_EXAMPLES_PATH` | `examples/ssm/ssm_examples.txt` | Few-shot + style golden set (`.txt` free text or `.json` structured) |
 | `MQ_PRICING_PATH` | `pricing.json` | Price table (USD per 1M tokens) |
 | `MQ_DOCLING_CACHE_DIR` | `.cache/docling` | Parsed documents cached by content hash |
 | `MQ_DOCLING_ARTIFACTS_PATH` | – | Local Docling models for offline parsing |
@@ -175,7 +178,8 @@ USD from `pricing.json`, duration, stage, unit, question). `run_report.json` agg
 
 - sections/units planned vs covered; generated / verified / flagged / discarded with reasons;
 - deterministic-check failures vs judge verdicts; duplicates;
-- duration per stage; tokens and cost per stage, per unit, per question;
+- duration per stage (with the error message when a stage failed); tokens and cost per
+  stage, per unit, per question; distribution of the correct option letter;
 - **cost per delivered question** — the number to extrapolate to a whole library.
 
 `medquiz report` prints it; the UI shows it in the *Report* tab. Indicative figures with

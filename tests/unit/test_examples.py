@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import json
 import logging
 from pathlib import Path
 
@@ -9,6 +10,7 @@ from medquiz_generator.application.examples import (
     format_examples,
     load_ssm_examples,
     parse_ssm_examples,
+    rotate_correct_option,
 )
 from tests.conftest import EXAMPLES_PATH
 
@@ -91,3 +93,42 @@ def test_format_examples_marks_correct_option() -> None:
     assert "Domanda 1" in text
     assert "A: Acalasia esofagea [corretta]" in text
     assert "Domanda 2" not in text
+
+
+def test_rotate_correct_option_moves_answer_and_relabels() -> None:
+    [example] = parse_ssm_examples(SAMPLE)[:1]
+    rotated = rotate_correct_option(example, 3)
+    assert rotated.correct_option_id == "D"
+    assert [o.id for o in rotated.options] == ["A", "B", "C", "D", "E"]
+    assert rotated.options[3].text == "Acalasia esofagea"
+    # Cyclic rotation: the relative order of the other options is preserved.
+    assert [o.text for o in rotated.options] == [
+        "Malformazione",
+        "Sindrome di Mallory-Weiss",
+        "Neoplasia",
+        "Acalasia esofagea",
+        "Stenosi organica",
+    ]
+    assert example.correct_option_id == "A"  # the original is untouched
+
+
+def test_format_examples_rotates_correct_position_across_examples() -> None:
+    examples = load_ssm_examples(EXAMPLES_PATH)
+    assert all(e.correct_option_id == "A" for e in examples)  # the raw file is A-biased
+    text = format_examples(examples)
+    positions = [line[0] for line in text.splitlines() if "[corretta]" in line]
+    assert positions == ["A", "B", "C", "D", "E"]
+
+
+def test_load_structured_json_examples(tmp_path: Path) -> None:
+    examples = parse_ssm_examples(SAMPLE)
+    path = tmp_path / "examples.json"
+    path.write_text(json.dumps([e.model_dump(mode="json") for e in examples]), encoding="utf-8")
+    loaded = load_ssm_examples(path)
+    assert loaded == examples
+
+
+def test_real_json_examples_match_text_file() -> None:
+    from_text = load_ssm_examples(EXAMPLES_PATH)
+    from_json = load_ssm_examples(EXAMPLES_PATH.with_suffix(".json"))
+    assert from_json == from_text
