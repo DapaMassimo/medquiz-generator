@@ -62,6 +62,9 @@ class Settings(BaseSettings):
     # 'semantic' = closest examples to the section (embeddings), used only when the pool is
     # larger than max_examples_in_prompt; 'first' = the first N of the file.
     examples_selection: Literal["first", "semantic"] = "semantic"
+    # Cosine similarity below which a semantic match is not convincing; missing slots are then
+    # filled with the first examples of the file (FirstN fallback).
+    examples_min_similarity: float = Field(default=0.3, ge=0.0, le=1.0)
     verify_judge_enabled: bool = True
     dedup_enabled: bool = True
     dedup_threshold: float = 0.92

@@ -167,7 +167,11 @@ class Container:
     def example_selector(self, tracker: UsageTracker) -> ExampleSelector:
         s = self.settings
         if s.examples_selection == "semantic" and len(self.examples) > s.max_examples_in_prompt:
-            return SemanticExampleSelector(self.embedding_provider(tracker), self.examples)
+            return SemanticExampleSelector(
+                self.embedding_provider(tracker),
+                self.examples,
+                min_similarity=s.examples_min_similarity,
+            )
         return FirstNExampleSelector(self.examples)
 
     # ------------------------------------------------------------------ stages

@@ -83,7 +83,9 @@ def test_semantic_selector_short_circuits_when_pool_fits() -> None:
 
 def test_semantic_selector_picks_closest_examples_and_embeds_pool_once() -> None:
     embeddings = FakeEmbeddings()
-    selector = SemanticExampleSelector(embeddings, POOL, ensure_both_registers=False)
+    selector = SemanticExampleSelector(
+        embeddings, POOL, min_similarity=0.0, ensure_both_registers=False
+    )
     section = (
         "1.2 Diagnosi\nL'ipertensione arteriosa si definisce con pressione sistolica uguale o "
         "superiore a 140 mmHg; il monitoraggio pressorio delle 24 ore è indicato nel sospetto "
@@ -99,9 +101,40 @@ def test_semantic_selector_picks_closest_examples_and_embeds_pool_once() -> None
     assert 4 in diabetic
 
 
+def test_semantic_selector_falls_back_to_first_n_below_threshold() -> None:
+    embeddings = FakeEmbeddings()
+    # Threshold impossible to reach: every slot comes from the file order (FirstN behaviour).
+    selector = SemanticExampleSelector(embeddings, POOL, min_similarity=0.99)
+    chosen = selector.select("ipertensione arteriosa monitoraggio pressorio", 3)
+    assert [e.number for e in chosen] == [1, 2, 3]
+    assert selector.last_fallback_count == 3
+    assert embeddings.calls == 2  # the query was still embedded (pool + query)
+
+
+def test_semantic_selector_partial_fallback_keeps_convincing_matches_first() -> None:
+    embeddings = FakeEmbeddings()
+    selector = SemanticExampleSelector(
+        embeddings, POOL, min_similarity=0.35, ensure_both_registers=False
+    )
+    # Only the examples sharing many words with the query can pass a strict threshold.
+    chosen = selector.select(
+        "Il monitoraggio pressorio delle 24 ore è indicato nell'ipertensione da camice bianco.", 3
+    )
+    numbers = [e.number for e in chosen]
+    assert numbers[0] == 6  # convincing match first
+    assert len(numbers) == 3 and len(set(numbers)) == 3
+    assert 1 <= selector.last_fallback_count <= 2
+    # Fallback slots are the first examples of the file not already chosen.
+    fallback = numbers[3 - selector.last_fallback_count :]
+    expected = [
+        e.number for e in POOL if e.number not in numbers[: 3 - selector.last_fallback_count]
+    ]
+    assert fallback == expected[: selector.last_fallback_count]
+
+
 def test_semantic_selector_guarantees_both_registers() -> None:
     embeddings = FakeEmbeddings()
-    selector = SemanticExampleSelector(embeddings, POOL)
+    selector = SemanticExampleSelector(embeddings, POOL, min_similarity=0.0)
     # A purely factual query would rank the three factual hypertension/diabetes examples first;
     # the diversity rule swaps the last slot for the best clinical vignette.
     chosen = selector.select("ipertensione arteriosa valore pressorio grado glicemia diabete", 3)
@@ -117,7 +150,9 @@ def test_generate_stage_uses_selector_per_unit(
     PlanStage(min_unit_chars=400).run(ctx, 8)
     ClassifyStage(FakeTaxonomyBuilder()).run(ctx)
     generator = FakeGenerator()
-    selector = SemanticExampleSelector(FakeEmbeddings(tracker=ctx.tracker), POOL)
+    selector = SemanticExampleSelector(
+        FakeEmbeddings(tracker=ctx.tracker), POOL, min_similarity=0.0
+    )
     GenerateStage(generator, POOL, max_examples=3, selector=selector).run(ctx)
     assert all(len(seen) == 3 for seen in generator.examples_seen)
     assert len({tuple(seen) for seen in generator.examples_seen}) > 1  # varies with the section
