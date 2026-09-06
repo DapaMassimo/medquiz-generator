@@ -60,7 +60,7 @@ def test_container_wiring_from_settings(tmp_path: Path) -> None:
     assert container.judge(ctx.tracker) is None
     assert container.embeddings(ctx.tracker) is None
     assert container.store.latest_run_id() == run_id
-    assert len(container.examples) == 5
+    assert len(container.examples) == 19
     assert container.parser().name == "docling(ocr=off)"
     assert container.export_stage() is not None
     assert container.tracing_enabled is False

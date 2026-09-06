@@ -138,5 +138,397 @@
     ],
     "correct_option_id": "A",
     "commentary": "In presenza di esofago di Barrett, anche in assenza di displasia, la sleeve gastrectomy è sconsigliata perché può aggravare il reflusso gastroesofageo e favorire la progressione della metaplasia. Il bypass gastrico con ansa alla Roux (RYGB) è invece l’intervento bariatrico di scelta in questi pazienti, poiché riduce l’esposizione acida dell’esofago residuo, e va sempre associato alla riparazione contestuale dell’ernia iatale per ottimizzare il controllo del reflusso."
+  },
+  {
+    "number": 6,
+    "question": "Un giovane di 28 anni si presenta all'attenzione medica riferendo la comparsa di pomfi pruriginosi di piccole dimensioni (1-2 mm) circondati da un'area di eritema, dopo esercizio fisico o episodi febbrili. Come si definisce tale manifestazione?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Angioedema ereditario"
+      },
+      {
+        "id": "B",
+        "text": "Dermatografismo"
+      },
+      {
+        "id": "C",
+        "text": "Orticaria colinergica"
+      },
+      {
+        "id": "D",
+        "text": "Malattia da siero"
+      },
+      {
+        "id": "E",
+        "text": "Vasculite necrotizzante"
+      }
+    ],
+    "correct_option_id": "C",
+    "commentary": "L'orticaria colinergica (CU) è un tipo di orticaria fisica che appare durante la sudorazione o quando la temperatura corporea aumenta. È causata da un rilascio di istamina, nel momento in cui si sta per sudare (ma non si suda), dovuto all'attivazione anomala dei mastociti. Questo comportamento dei mastociti è causato da un'elevata quantità di acetilcolina (da qui il nome colinergica), rilasciata normalmente per attivare le ghiandole sudoripare. Si presenta con pomfi piccoli di breve durata, che spesso hanno un alone eritematoso attorno. I sintomi diminuiscono entro 1 h. La terapia più diffusa è la fototerapia con raggi UVB, la quale rallenta la crescita degli strati più esterni dell'epidermide. Inoltre la terapia con antistaminici non è molto efficace."
+  },
+  {
+    "number": 7,
+    "question": "L'esofago di Barrett è costituito da una condizione in cui è sempre presente:",
+    "options": [
+      {
+        "id": "A",
+        "text": "Proliferazione di cellule ciliate al terzo prossimale dell'esofago"
+      },
+      {
+        "id": "B",
+        "text": "Epitelio prossimale esofageo sostituito da epitelio di tipo respiratorio"
+      },
+      {
+        "id": "C",
+        "text": "Carcinoma in situ a livello distale esofageo"
+      },
+      {
+        "id": "D",
+        "text": "Epitelio distale esofageo sostituito da epitelio di tipo cilindrico (o colonnare) metaplastico"
+      },
+      {
+        "id": "E",
+        "text": "Infezione da Helicobacter esofagea"
+      }
+    ],
+    "correct_option_id": "D",
+    "commentary": "Con \"esofago di Barrett\" si definisce la sostituzione del normale epitelio squamoso dell'esofago distale con un epitelio colonnare metaplastico (simile a quello gastrico). Tale sostituzione avviene in genere durante la fase di guarigione dall'esofagite acuta. La maggior parte degli adenocarcinomi esofagei insorge su un quadro di esofago di Barrett. In endoscopia, l'esofago di Barrett presenta delle bande rosse di epitelio metaplastico che si estendono prossimalmente, a partire dallo sfintere esofageo inferiore. I pazienti con esofago di Barrett necessitano di un intenso trattamento a lungo termine per la malattia da reflusso gastroesofageo e di una sorveglianza endoscopica per il rischio di trasformazione maligna, con follow-up a intervalli di 3-12 mesi, a seconda del grado della metaplasia."
+  },
+  {
+    "number": 8,
+    "question": "La rettocolite ulcerosa è:",
+    "options": [
+      {
+        "id": "A",
+        "text": "Una malattia cronica del colon che determina lesioni discontinue della mucosa intestinale in senso retrogrado"
+      },
+      {
+        "id": "B",
+        "text": "Una malattia cronica intestinale che determina lesioni continue della mucosa intestinale in senso retrogrado"
+      },
+      {
+        "id": "C",
+        "text": "Una malattia cronica intestinale che determina diverticolosi diffusa del colon"
+      },
+      {
+        "id": "D",
+        "text": "Una malattia acuta intestinale che guarisce dopo terapia medica"
+      },
+      {
+        "id": "E",
+        "text": "Una malattia cronica che interessa esclusivamente il sigma"
+      }
+    ],
+    "correct_option_id": "B",
+    "commentary": "La rettocolite ulcerosa (RCU) è una malattia infiammatoria cronica intestinale (IBD); è caratterizzata istologicamente da lesioni continue, senza interruzione, della mucosa intestinale. Questa caratteristica la differenzia dal Morbo di Crohn, altra IBD, che presenta delle lesioni \"a salto\", ovvero discontinue per l'interposizione di tratti di mucosa intestinale indenne dalla malattia. La RCU non si associa alla diverticolosi e non è una malattia acuta, bensì cronica (come da definizione). Come suggerito dal nome stesso della malattia, si parla di retto-colite, quindi vi è un interessamento del retto e, in senso retrogrado, anche del colon, con estensione talvolta fino al cieco."
+  },
+  {
+    "number": 9,
+    "question": "Nei pazienti affetti da Linfoma di Burkitt, soprattutto nella variante endemica, è stata dimostrata pregressa infezione da:",
+    "options": [
+      {
+        "id": "A",
+        "text": "Cytomegalovirus"
+      },
+      {
+        "id": "B",
+        "text": "Herpes Simplex Virus"
+      },
+      {
+        "id": "C",
+        "text": "Paramyxovirus"
+      },
+      {
+        "id": "D",
+        "text": "Epstein-Barr Virus"
+      },
+      {
+        "id": "E",
+        "text": "Toxoplasma gondii"
+      }
+    ],
+    "correct_option_id": "D",
+    "commentary": "Il linfoma di Burkitt è un linfoma a cellule B particolarmente aggressivo. Si presenta con forme endemiche (come la variante africana), sporadiche (variante non-africana) e correlate all'immunodeficienza. La malattia è strettamente associata all'infezione da virus di Epstein-Barr (EBV), in particolare nella forma endemica. Ricordiamo che la traslocazione distintiva del linfoma di Burkitt è quella del gene c-myc, dal cromosoma 8 al 14."
+  },
+  {
+    "number": 10,
+    "question": "Si definiscono tofi:",
+    "options": [
+      {
+        "id": "A",
+        "text": "Placche calcifiche a livello delle articolazioni in pazienti affetti da Morbo di Paget"
+      },
+      {
+        "id": "B",
+        "text": "Accumuli di cristalli di urati nelle articolazioni di pazienti affetti da artrite gottosa"
+      },
+      {
+        "id": "C",
+        "text": "Accumuli di immunocomplessi in pazienti affetti da artrite autoimmune"
+      },
+      {
+        "id": "D",
+        "text": "Precipitati antigene-anticorpo a livello dei capillari sanguigni"
+      },
+      {
+        "id": "E",
+        "text": "Lesioni caratteristiche dei pazienti affetti da pemfigoide"
+      }
+    ],
+    "correct_option_id": "B",
+    "commentary": "I \"tofi\" sono delle masse nodulari contenenti cristalli di urato che si depositano nei tessuti molli dei pazienti affetti da gotta, non adeguatamente trattata. In media si formano 12 anni dopo il primo attacco di gotta. I precipitati antigene-anticorpo sono chiamati immunocomplessi, mentre le lesioni del pemfigoide sono delle lesioni di tipo bolloso."
+  },
+  {
+    "number": 11,
+    "question": "La dopamina:",
+    "options": [
+      {
+        "id": "A",
+        "text": "È un antagonista dei recettori beta-adrenergici"
+      },
+      {
+        "id": "B",
+        "text": "È un antagonista dei recettori alfa-adrenergici"
+      },
+      {
+        "id": "C",
+        "text": "Agisce esclusivamente a livello periferico"
+      },
+      {
+        "id": "D",
+        "text": "Viene prodotta a partire dall'adrenalina"
+      },
+      {
+        "id": "E",
+        "text": "È un precursore della noradrenalina"
+      }
+    ],
+    "correct_option_id": "E",
+    "commentary": "La via biosintetica delle catecolamine è la seguente: tirosina > dopa > dopamina > noradrenalina > adrenalina. Dunque, la dopamina è il precursore di noradrenalina e adrenalina. La dopamina, infatti, può parzialmente legarsi e agire come agonista a livello dei recettori adrenergici e agisce anche a livello centrale nelle vie meso-corticale, mesolimbica, tuberoinfundibolare e nigrostriatale."
+  },
+  {
+    "number": 12,
+    "question": "Il trattamento di prima linea (il più importante da somministrare) dello shock anafilattico prevede somministrazione di:",
+    "options": [
+      {
+        "id": "A",
+        "text": "Dobutamina"
+      },
+      {
+        "id": "B",
+        "text": "Atropina"
+      },
+      {
+        "id": "C",
+        "text": "Dopamina"
+      },
+      {
+        "id": "D",
+        "text": "Adrenalina"
+      },
+      {
+        "id": "E",
+        "text": "Amiodarone"
+      }
+    ],
+    "correct_option_id": "D",
+    "commentary": "L'adrenalina è il trattamento di prima linea nello shock anafilattico. L'adrenalina, infatti, è in grado di inibire il rilascio dei mediatori responsabili dell'infiammazione dai mastociti e dai basofili e inibisce direttamente la vasodilatazione, l'edema e la broncocostrizione. Le indicazioni terapeutiche nello shock anafilattico sono quelle di somministrare adrenalina nella forma 1:1000 i.m. o s.c., oppure diluire una fiala da 0,5 mg di adrenalina 1:1000 in 10 cc di soluzione fisiologica e iniettare lentamente ev."
+  },
+  {
+    "number": 13,
+    "question": "Un medico sta rianimando un paziente in tachicardia ventricolare (TV) senza polso. Permane TV senza polso dopo l'erogazione di 3 scariche di defibrillatore e una dose di 1 mg di adrenalina. Quale farmaco occorre somministrare successivamente?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Isoproterenolo"
+      },
+      {
+        "id": "B",
+        "text": "Amiodarone"
+      },
+      {
+        "id": "C",
+        "text": "Atropina"
+      },
+      {
+        "id": "D",
+        "text": "Flecainide"
+      },
+      {
+        "id": "E",
+        "text": "Dopamina"
+      }
+    ],
+    "correct_option_id": "B",
+    "commentary": "Secondo le linee guida fornite dall'ACLS (advanced cardiovascular life support) per la rianimazione cardio-polmonare (RCP), dopo la terza scarica con defibrillatore di un ritmo shockabile (Tachicardia Ventricolare - TV o Fibrillazione Ventricolare FV), si somministra 1 mg di adrenalina e successivamente, in assenza di variazioni del quadro clinico, si somministrano in bolo 300 mg di Amiodarone (due fiale), seguiti da altri 2 cicli di RCP con 1 mg ulteriore di adrenalina e 2 altri shock con defibrillatore, prima di somministrare altri 150 mg di amiodarone."
+  },
+  {
+    "number": 14,
+    "question": "Un medico deve procedere a incannulazione dell'arteria radiale per il monitoraggio invasivo della pressione arteriosa. Prima della procedura è opportuno eseguire:",
+    "options": [
+      {
+        "id": "A",
+        "text": "Arteriografia"
+      },
+      {
+        "id": "B",
+        "text": "Marcatura del sito chirurgico"
+      },
+      {
+        "id": "C",
+        "text": "Test di Allen"
+      },
+      {
+        "id": "D",
+        "text": "Analgesia della cute con ghiaccio"
+      },
+      {
+        "id": "E",
+        "text": "Bolo di noradrenalina"
+      }
+    ],
+    "correct_option_id": "C",
+    "commentary": "Il test di Allen (conosciuto anche come prova di Allen) è un test clinico che valuta la capacità dell'arteria ulnare di garantire un adeguato flusso di sangue alla mano in caso di occlusione dell'arteria radiale. L'arteria radiale potrebbe occludersi e non essere più in grado di espletare la propria funzione in seguito a manovre invasive come emogas o puntura arteriosa per l'accesso di cateteri endoarteriosi, come nello scenario presentato. Prima di incannulare l'arteria radiale è opportuno eseguire un test di Allen per accertarsi che il flusso sanguigno alla mano sia vicariato dall'arteria ulnare."
+  },
+  {
+    "number": 15,
+    "question": "Scenario 1.1 — Un paziente deve essere sottoposto a un intervento chirurgico ortopedico. Subito dopo l'esecuzione dell'anestesia locoregionale, il paziente sviluppa i sintomi di tossicità sistemica da anestetico locale. Quale dei seguenti NON è un sintomo tipico di tale tossicità?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Iperventilazione"
+      },
+      {
+        "id": "B",
+        "text": "Tinnito"
+      },
+      {
+        "id": "C",
+        "text": "Convulsioni"
+      },
+      {
+        "id": "D",
+        "text": "Aritmie cardiache"
+      },
+      {
+        "id": "E",
+        "text": "Intorpidimento della lingua"
+      }
+    ],
+    "correct_option_id": "A",
+    "commentary": "La tossicità sistemica da anestetici locali (LAST) include lo sviluppo iniziale di segni e sintomi da eccitazione del SNC (agitazione, turbe visive e uditive, gusto metallico, parestesie periorali o periferiche, disturbi psichici e crisi epilettiche), seguiti spesso da segni di depressione dello stesso SNC (letargia, confusione, coma o arresto respiratorio). Embricate alle manifestazioni neurologiche, possono comparire più o meno evidenti segni di eccitazione cardiaca (tachicardia, ipertensione, aritmie ventricolari), poi soppiantati dalla depressione cardiovascolare (bradicardia, ipotensione, blocchi di conduzione, ridotta contrattilità, asistolia). Quindi sono sintomi tipici il tinnito, le convulsioni, le aritmie cardiache e l'intorpidimento della lingua; non è un sintomo tipico della tossicità da anestetici locali l'iperventilazione."
+  },
+  {
+    "number": 16,
+    "question": "Scenario 1.2 — Qual è l'antidoto da somministrare?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Intralipid 20%"
+      },
+      {
+        "id": "B",
+        "text": "Soluzione glucosata 10%"
+      },
+      {
+        "id": "C",
+        "text": "Soluzione fisiologica"
+      },
+      {
+        "id": "D",
+        "text": "Soluzione glucosata 33%"
+      },
+      {
+        "id": "E",
+        "text": "Soluzione di Ringer lattato"
+      }
+    ],
+    "correct_option_id": "A",
+    "commentary": "In caso di tossicità sistemica da anestetico locale, l'antidoto è rappresentato dalla somministrazione di emulsioni lipidiche, secondo un meccanismo non del tutto chiarito. Altri trattamenti da mettere in atto immediatamente sono il controllo delle convulsioni e delle aritmie, oltre alla somministrazione di ossigeno, al controllo delle vie aeree e al reperimento di un accesso venoso."
+  },
+  {
+    "number": 17,
+    "question": "Una donna di 45 anni giunge al Pronto Soccorso in coma e depressione respiratoria, il medico somministra naloxone cloridrato 0,4 mg per via endovenosa. Il naloxone cloridrato è:",
+    "options": [
+      {
+        "id": "A",
+        "text": "Indicato nella depressione respiratoria da benzodiazepine"
+      },
+      {
+        "id": "B",
+        "text": "Una molecola di sintesi derivata dall'ossicodone"
+      },
+      {
+        "id": "C",
+        "text": "Somministrato per via endovenosa per la prevenzione della stipsi da oppiacei"
+      },
+      {
+        "id": "D",
+        "text": "Un agonista degli oppiacei"
+      },
+      {
+        "id": "E",
+        "text": "Il farmaco di scelta nell'intossicazione acuta da oppiacei"
+      }
+    ],
+    "correct_option_id": "E",
+    "commentary": "Il naloxone cloridrato è il farmaco di scelta nel caso di intossicazione acuta da oppiacei. Si tratta infatti di una molecola con elevata affinità per i recettori degli oppioidi, ma con bassa attività intrinseca. Basse dosi di naloxone (0,4-0,8 mg) somministrate per via endovenosa o intramuscolare sono in grado di antagonizzare molto velocemente gli effetti degli oppioidi, con aumento della frequenza respiratoria entro 1 o 2 minuti (risposta D errata). La durata degli effetti antagonisti dipende dalla dose, ed è intorno alle 1-4 ore. Si tratta di un derivato dell'ossimorfone (risposta B errata). L'antagonista oppioide utilizzato per il trattamento della stipsi da terapia cronica con oppiacei è il metilnaltrexone, antagonista specifico dei recettori μ ad azione periferica, che non antagonizza l'azione analgesica prodotta dagli oppioidi a livello centrale (risposta C errata). Infine, non è indicato nella depressione respiratoria da benzodiazepine, in quanto non ha affinità con il recettore GABA (risposta A errata)."
+  },
+  {
+    "number": 18,
+    "question": "Una paziente di 40 anni, asintomatica per dispnea, riferisce di aver avuto un episodio di fibrillazione atriale parossistica della durata di 24h un mese prima. All'ecocardiogramma si reperta un prolasso della mitrale da flail di P2 con insufficienza mitralica moderato-severa. Frazione d'eiezione (LVEF) 58%. In base alle recenti linee guida dell'European Society of Cardiology, quale procedura è indicata in tale paziente?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Ablazione chirurgica del focus responsabile della fibrillazione atriale"
+      },
+      {
+        "id": "B",
+        "text": "Ablazione a radiofrequenza del focus responsabile della fibrillazione atriale"
+      },
+      {
+        "id": "C",
+        "text": "Posizionamento di Mitraclip percutanea"
+      },
+      {
+        "id": "D",
+        "text": "Plastica della mitrale"
+      },
+      {
+        "id": "E",
+        "text": "Terapia medica"
+      }
+    ],
+    "correct_option_id": "D",
+    "commentary": "Secondo le linee guida ESC del 2018, in caso di insufficienza mitralica severa, la plastica della mitrale è indicata per: pazienti sintomatici con FE > 30% e pazienti asintomatici con disfunzione del ventricolo sinistro (LVESD ≥ 45 mm e/o FE ≤ 60%) (risposta E errata). Inoltre, l'intervento andrebbe considerato anche per i pazienti con funzione ventricolare sinistra conservata (LVESD < 45 mm e/o FE > 60%) ma con fibrillazione atriale secondaria al rigurgito mitralico o ipertensione polmonare (pressione polmonare sistolica a riposo > 50mmHg). L'ablazione del focus responsabile della fibrillazione atriale non è un approccio terapeutico corretto, dal momento che l'episodio di FA parossistica era verosimilmente dovuto al rigurgito mitralico e alla sovra-distensione atriale (risposte A e B errate). La Mitraclip percutanea viene riservata ai pazienti sintomatici, con FE < 30%, refrattari alla terapia medica, con molte comorbidità e bassa probabilità che la valvola possa essere durevole (risposta C errata)."
+  },
+  {
+    "number": 19,
+    "question": "Il diverticolo di Meckel è:",
+    "options": [
+      {
+        "id": "A",
+        "text": "Una complicanza della dieta a basso contenuto di scorie"
+      },
+      {
+        "id": "B",
+        "text": "Caratteristico del sesso femminile"
+      },
+      {
+        "id": "C",
+        "text": "Un'estroflessione della parete intestinale a fondo cieco a livello dell'ileo"
+      },
+      {
+        "id": "D",
+        "text": "Un'estroflessione della parete intestinale a fondo cieco a livello del colon"
+      },
+      {
+        "id": "E",
+        "text": "Un'estroflessione della parete esofagea a fondo cieco"
+      }
+    ],
+    "correct_option_id": "C",
+    "commentary": "Il diverticolo di Meckel, anche definito \"diverticolo ileale\", è un'estroflessione a fondo cieco, che si distacca solitamente dal margine convesso di un'ansa intestinale, a distanza di 2-60 cm dalla valvola ileocecale. È presente nel 2% dei casi, la sua presenza dipende dalla persistenza e dal successivo sviluppo del tratto prossimale del condotto vitellino che unisce l'ansa ombelicale embrionale al sacco vitellino (dotto onfalomesenterico), che normalmente scompare mediante un'involuzione atrofica (risposte A e B errate). Il colon può presentare diverticolosi, ma non un diverticolo specifico (risposta D errata) e l'estroflessione della parete esofagea a fondo cieco è chiamata diverticolo di Zenker (risposta E errata)."
   }
 ]

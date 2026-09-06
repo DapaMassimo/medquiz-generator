@@ -60,12 +60,76 @@ def test_parse_examples_tolerates_plain_format_and_suffix_marker() -> None:
     assert second.commentary == ""
 
 
-def test_real_examples_file_parses_five_questions() -> None:
+def test_real_examples_file_parses_all_questions() -> None:
     examples = load_ssm_examples(EXAMPLES_PATH)
-    assert len(examples) == 5
+    assert [e.number for e in examples] == list(range(1, 20))
     assert all(len(e.options) == 5 for e in examples)
-    assert all(e.correct_option_id == "A" for e in examples)
+    assert all([o.id for o in e.options] == ["A", "B", "C", "D", "E"] for e in examples)
+    # First batch (SSM 2026 dump) is A-biased; the second batch keeps its own answer key.
+    assert "".join(e.correct_option_id or "?" for e in examples) == "AAAAACDBDBEDBCAAEDC"
     assert all(e.commentary for e in examples)
+    assert all(len(e.question) > 10 for e in examples)  # shortest stem: "La dopamina:"
+
+
+MARKDOWN_SAMPLE = """# Quiz SSM — Domande con correzione commentata
+
+---
+
+## Domanda 1
+
+Un giovane di 28 anni si presenta con pomfi pruriginosi dopo esercizio fisico.
+Come si definisce tale manifestazione?
+
+- A. Angioedema ereditario
+- B. Dermatografismo
+- **C. Orticaria colinergica** ✅
+- D. Malattia da siero
+- E. Vasculite necrotizzante
+
+**Spiegazione:** L'orticaria colinergica è un tipo di orticaria fisica.
+Seconda riga della spiegazione.
+
+---
+
+## Domanda 2
+
+**Scenario 1.2** — Qual è l'antidoto da somministrare?
+
+- **A. Intralipid 20%** ✅
+- B. Soluzione glucosata 10%
+- C. Soluzione fisiologica
+- D. Soluzione glucosata 33%
+- E. Soluzione di Ringer lattato
+
+**Spiegazione:** Emulsioni lipidiche.
+
+---
+
+## Riepilogo risposte
+
+| # | Risposta |
+|---|----------|
+| 1 | C |
+| 2 | A |
+"""
+
+
+def test_parse_markdown_dump_format() -> None:
+    examples = parse_ssm_examples(MARKDOWN_SAMPLE)
+    assert [e.number for e in examples] == [1, 2]
+    first, second = examples
+    assert first.question.startswith("Un giovane di 28 anni") and first.question.endswith("?")
+    assert [o.id for o in first.options] == ["A", "B", "C", "D", "E"]
+    assert first.correct_option_id == "C"
+    assert first.options[2].text == "Orticaria colinergica"  # no ** or ✅ left behind
+    assert first.commentary == (
+        "L'orticaria colinergica è un tipo di orticaria fisica. Seconda riga della spiegazione."
+    )
+    assert second.question == "Scenario 1.2 — Qual è l'antidoto da somministrare?"
+    assert second.correct_option_id == "A" and second.options[0].text == "Intralipid 20%"
+    # The trailing answer-key table is not swallowed into the last commentary.
+    assert second.commentary == "Emulsioni lipidiche."
+    assert "Riepilogo" not in second.commentary
 
 
 def test_missing_file_warns_and_returns_empty(
@@ -114,10 +178,11 @@ def test_rotate_correct_option_moves_answer_and_relabels() -> None:
 
 def test_format_examples_rotates_correct_position_across_examples() -> None:
     examples = load_ssm_examples(EXAMPLES_PATH)
-    assert all(e.correct_option_id == "A" for e in examples)  # the raw file is A-biased
+    assert all(e.correct_option_id == "A" for e in examples[:5])  # the first dump is A-biased
     text = format_examples(examples)
     positions = [line[0] for line in text.splitlines() if "[corretta]" in line]
-    assert positions == ["A", "B", "C", "D", "E"]
+    assert positions == [("ABCDE")[i % 5] for i in range(len(examples))]
+    assert positions[:5] == ["A", "B", "C", "D", "E"]
 
 
 def test_load_structured_json_examples(tmp_path: Path) -> None:

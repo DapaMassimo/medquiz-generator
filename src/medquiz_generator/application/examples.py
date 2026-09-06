@@ -15,15 +15,25 @@ from typing import cast
 
 from medquiz_generator.domain.models import OPTION_IDS, Option, OptionId, SsmExample
 
-_QUESTION_HEADER = re.compile(r"^\s*Domanda\s+(\d+)\s*[:.)]?\s*$", re.IGNORECASE)
+_QUESTION_HEADER = re.compile(r"^\s*#*\s*Domanda\s+(\d+)\s*[:.)]?\s*$", re.IGNORECASE)
 _OPTION_LINE = re.compile(
     r"^\s*(?P<mark>[☑☐✓✔■□•\-*]?)\s*(?P<id>[A-Ea-e])\s*[:.)\-]\s*(?P<text>.+?)\s*$"
 )
-_CORRECT_SUFFIX = re.compile(r"\s*\((?:risposta\s+)?corretta\)\s*$", re.IGNORECASE)
+_CORRECT_SUFFIX = re.compile(r"\s*(\((?:risposta\s+)?corretta\)|✅|✔|✓)\s*$", re.IGNORECASE)
 _COMMENT_PREFIX = re.compile(
     r"^\s*(Commento|Spiegazione|Risposta)\s*:\s*(?P<text>.*)$", re.IGNORECASE
 )
+# A trailing answer-key / summary section ends the last question's block.
+_STOP_LINE = re.compile(r"^\s*#*\s*(Riepilogo|Soluzioni|Risposte)\b", re.IGNORECASE)
+_SEPARATOR = re.compile(r"^\s*(-{3,}|\*{3,}|_{3,})\s*$")
+_EMPHASIS = re.compile(r"\*\*|__")
 _CORRECT_MARKS = {"☑", "✓", "✔", "■"}
+
+
+def _clean_line(raw: str) -> str:
+    """Drop Markdown emphasis markers so '**C. text** ✅' parses like 'C. text ✅'."""
+    return _EMPHASIS.sub("", raw).rstrip()
+
 
 log = logging.getLogger(__name__)
 
@@ -35,7 +45,9 @@ def _parse_block(number: int, lines: list[str]) -> SsmExample | None:
     commentary_lines: list[str] = []
     mode = "question"
     for raw in lines:
-        line = raw.rstrip()
+        line = _clean_line(raw)
+        if _SEPARATOR.match(line):
+            continue
         comment = _COMMENT_PREFIX.match(line)
         if comment:
             mode = "comment"
@@ -43,6 +55,8 @@ def _parse_block(number: int, lines: list[str]) -> SsmExample | None:
                 commentary_lines.append(comment.group("text"))
             continue
         if mode == "comment":
+            if _STOP_LINE.match(line):
+                break
             if line.strip():
                 commentary_lines.append(line.strip())
             continue
@@ -55,6 +69,7 @@ def _parse_block(number: int, lines: list[str]) -> SsmExample | None:
                 _CORRECT_SUFFIX.search(text)
             )
             text = _CORRECT_SUFFIX.sub("", text).strip()
+            text = _EMPHASIS.sub("", text).strip()
             options.append(Option(id=option_id, text=text))
             if is_correct and correct is None:
                 correct = option_id
@@ -77,7 +92,7 @@ def parse_ssm_examples(text: str) -> list[SsmExample]:
     current_number: int | None = None
     buffer: list[str] = []
     for line in text.splitlines():
-        header = _QUESTION_HEADER.match(line)
+        header = _QUESTION_HEADER.match(_clean_line(line))
         if header:
             if current_number is not None:
                 parsed = _parse_block(current_number, buffer)
