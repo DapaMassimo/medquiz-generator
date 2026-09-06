@@ -16,3 +16,7 @@ data/input/*.pdf
 *.xlsx
 .uploads/
 .import_linter_cache/
+
+# Generated at delivery time by `make licenses`
+THIRD_PARTY_LICENSES.txt
+.licenses-pkgs.tmp

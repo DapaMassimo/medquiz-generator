@@ -28,6 +28,7 @@ medquiz = "medquiz_generator.entrypoints.cli:app"
 dev = [
     "import-linter>=2.3",
     "mypy>=1.15",
+    "pip-licenses>=5.0",
     "pre-commit>=4.0",
     "pytest>=8.3",
     "pytest-cov>=6.0",
