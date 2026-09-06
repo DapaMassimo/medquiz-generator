@@ -10,7 +10,6 @@ from medquiz_generator.application.examples import (
     format_examples,
     load_ssm_examples,
     parse_ssm_examples,
-    rotate_correct_option,
 )
 from tests.conftest import EXAMPLES_PATH
 
@@ -65,8 +64,10 @@ def test_real_examples_file_parses_all_questions() -> None:
     assert [e.number for e in examples] == list(range(1, 20))
     assert all(len(e.options) == 5 for e in examples)
     assert all([o.id for o in e.options] == ["A", "B", "C", "D", "E"] for e in examples)
-    # First batch (SSM 2026 dump) is A-biased; the second batch keeps its own answer key.
-    assert "".join(e.correct_option_id or "?" for e in examples) == "AAAAACDBDBEDBCAAEDC"
+    # Batches are interleaved so that the first examples do not all share the same answer.
+    key = "".join(e.correct_option_id or "?" for e in examples)
+    assert key == "CADBADBAEDABCAAAEDC"
+    assert len(set(key[:5])) >= 3
     assert all(e.commentary for e in examples)
     assert all(len(e.question) > 10 for e in examples)  # shortest stem: "La dopamina:"
 
@@ -159,32 +160,6 @@ def test_format_examples_marks_correct_option() -> None:
     assert "Domanda 2" not in text
 
 
-def test_rotate_correct_option_moves_answer_and_relabels() -> None:
-    [example] = parse_ssm_examples(SAMPLE)[:1]
-    rotated = rotate_correct_option(example, 3)
-    assert rotated.correct_option_id == "D"
-    assert [o.id for o in rotated.options] == ["A", "B", "C", "D", "E"]
-    assert rotated.options[3].text == "Acalasia esofagea"
-    # Cyclic rotation: the relative order of the other options is preserved.
-    assert [o.text for o in rotated.options] == [
-        "Malformazione",
-        "Sindrome di Mallory-Weiss",
-        "Neoplasia",
-        "Acalasia esofagea",
-        "Stenosi organica",
-    ]
-    assert example.correct_option_id == "A"  # the original is untouched
-
-
-def test_format_examples_rotates_correct_position_across_examples() -> None:
-    examples = load_ssm_examples(EXAMPLES_PATH)
-    assert all(e.correct_option_id == "A" for e in examples[:5])  # the first dump is A-biased
-    text = format_examples(examples)
-    positions = [line[0] for line in text.splitlines() if "[corretta]" in line]
-    assert positions == [("ABCDE")[i % 5] for i in range(len(examples))]
-    assert positions[:5] == ["A", "B", "C", "D", "E"]
-
-
 def test_load_structured_json_examples(tmp_path: Path) -> None:
     examples = parse_ssm_examples(SAMPLE)
     path = tmp_path / "examples.json"
@@ -197,3 +172,10 @@ def test_real_json_examples_match_text_file() -> None:
     from_text = load_ssm_examples(EXAMPLES_PATH)
     from_json = load_ssm_examples(EXAMPLES_PATH.with_suffix(".json"))
     assert from_json == from_text
+
+
+def test_format_examples_keeps_original_option_order() -> None:
+    examples = load_ssm_examples(EXAMPLES_PATH)
+    text = format_examples(examples, max_examples=3)
+    marked = [line[0] for line in text.splitlines() if "[corretta]" in line]
+    assert marked == [e.correct_option_id for e in examples[:3]]

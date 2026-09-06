@@ -132,36 +132,10 @@ def load_ssm_examples(path: Path) -> list[SsmExample]:
     return examples
 
 
-def rotate_correct_option(example: SsmExample, target_index: int) -> SsmExample:
-    """Return a copy whose correct option sits at ``target_index`` (0 = A), preserving the
-    relative order of the other options and relabelling ids A-E.
-
-    Real exam dumps often list the correct answer first; showing that pattern as few-shot
-    teaches the model to always pick A. Rotating removes the positional bias.
-    """
-    options = list(example.options)
-    if example.correct_option_id is None or len(options) != len(OPTION_IDS):
-        return example
-    current = next(i for i, o in enumerate(options) if o.id == example.correct_option_id)
-    shift = (current - target_index) % len(options)
-    rotated = options[shift:] + options[:shift]
-    relabelled = [
-        Option(id=oid, text=option.text) for oid, option in zip(OPTION_IDS, rotated, strict=True)
-    ]
-    return example.model_copy(
-        update={"options": relabelled, "correct_option_id": OPTION_IDS[target_index]}
-    )
-
-
 def format_examples(examples: list[SsmExample], max_examples: int | None = None) -> str:
-    """Render examples as few-shot text (Italian content, as in the real exam).
-
-    The correct option position rotates across examples (A, B, C, D, E, A...) so the few-shot
-    block never suggests that one letter is systematically the right one.
-    """
+    """Render examples as few-shot text (Italian content, as in the real exam)."""
     chunks: list[str] = []
-    for index, original in enumerate(examples[:max_examples]):
-        example = rotate_correct_option(original, index % len(OPTION_IDS))
+    for example in examples[:max_examples]:
         lines = [f"Domanda {example.number}", example.question, ""]
         for option in example.options:
             marker = "[corretta]" if option.id == example.correct_option_id else ""

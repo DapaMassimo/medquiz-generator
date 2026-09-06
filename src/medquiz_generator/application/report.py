@@ -113,10 +113,6 @@ def build_run_report(ctx: RunContext) -> RunReport:
         deterministic_failures=dict(deterministic),
         judge_verdicts=dict(judge_verdicts),
         duplicates=duplicates,
-        correct_option_distribution={
-            oid: sum(1 for i in delivered if i.correct_option_id == oid)
-            for oid in ("A", "B", "C", "D", "E")
-        },
         stage_timings=timings,
         usage_by_stage=by_stage,
         usage_by_unit=by_unit,

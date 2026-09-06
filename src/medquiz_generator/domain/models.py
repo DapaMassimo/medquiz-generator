@@ -456,9 +456,6 @@ class RunReport(BaseModel):
     deterministic_failures: dict[str, int] = Field(default_factory=dict)
     judge_verdicts: dict[str, int] = Field(default_factory=dict)
     duplicates: int = 0
-    correct_option_distribution: dict[str, int] = Field(
-        default_factory=dict, description="Delivered questions per correct option id (A-E)."
-    )
     stage_timings: list[StageTiming] = Field(default_factory=list)
     usage_by_stage: dict[str, UsageSummary] = Field(default_factory=dict)
     usage_by_unit: dict[str, UsageSummary] = Field(default_factory=dict)

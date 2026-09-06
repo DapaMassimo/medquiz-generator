@@ -92,7 +92,8 @@ Hard rules — violating any of them makes the question unusable:
    drug names, thresholds or mechanisms that are not in the text.
 2. Exactly 5 options with ids A, B, C, D, E; exactly ONE is correct. Options must be distinct,
    non-empty, of similar length and register; no "tutte le precedenti" / "nessuna delle
-   precedenti".
+   precedenti". Vary the position of the correct option across the questions you write: no
+   letter must be systematically the right one.
 3. Distractors must be plausible but unequivocally wrong according to the section text: build
    them from typical errors and from neighbouring concepts that appear in the same material
    (other values, other classes, other conditions mentioned nearby).

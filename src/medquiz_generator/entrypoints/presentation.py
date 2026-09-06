@@ -66,11 +66,6 @@ def render_report(report: RunReport) -> str:
         f"{report.flagged}  discarded: {report.discarded}  exported: {report.exported}  "
         f"duplicates: {report.duplicates}",
     ]
-    if report.correct_option_distribution:
-        lines.append(
-            "Correct option distribution (delivered): "
-            + ", ".join(f"{k}={v}" for k, v in report.correct_option_distribution.items())
-        )
     if report.deterministic_failures:
         lines.append(
             "Deterministic failures: "

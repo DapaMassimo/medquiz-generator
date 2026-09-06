@@ -1,146 +1,6 @@
 [
   {
     "number": 1,
-    "question": "Un uomo di 50 anni si presenta in ambulatorio lamentando difficoltà nella deglutizione da circa 6 mesi. Riferisce che il problema si manifesta prevalentemente con i liquidi, mentre i cibi solidi sono deglutiti con minor difficoltà (disfagia paradossa). Negli ultimi due mesi, ha perso circa 5 kg. Non riferisce dolore toracico, rigurgito o pirosi retrosternale, ma riferisce una sensazione di “cibo bloccato” in regione retrosternale media. La radiografia del torace è negativa, l’esofagogramma con bario evidenzia un esofago dilatato con restringimento “a coda di topo” al livello della giunzione gastroesofagea. Per quale tra le seguenti diagnosi depone con maggiore probabilità il quadro clinico-radiologico rappresentato?",
-    "options": [
-      {
-        "id": "A",
-        "text": "Acalasia esofagea"
-      },
-      {
-        "id": "B",
-        "text": "Stenosi organica dell’esofago distale"
-      },
-      {
-        "id": "C",
-        "text": "Malformazione dell’esofago"
-      },
-      {
-        "id": "D",
-        "text": "Sindrome di Mallory-Weiss"
-      },
-      {
-        "id": "E",
-        "text": "Stenosi esofagea distale neoplastica"
-      }
-    ],
-    "correct_option_id": "A",
-    "commentary": "La diagnosi di acalasia esofagea si basa su un quadro clinico-radiologico tipico: disfagia paradossa (più marcata per i liquidi che per i solidi), calo ponderale e, all’esofagogramma con bario, il caratteristico aspetto “a becco d’uccello” (o “a coda di topo”) a livello della giunzione esofago-gastrica. Il quadro è dovuto al mancato rilasciamento dello sfintere esofageo inferiore associato ad aperistalsi del corpo esofageo, per degenerazione del plesso mioenterico di Auerbach. La manometria esofagea ad alta risoluzione è l’esame di conferma diagnostica. Nei pazienti con calo ponderale significativo è comunque sempre indicata l’endoscopia digestiva alta, per escludere una pseudoacalasia secondaria a neoplasia della giunzione gastroesofagea."
-  },
-  {
-    "number": 2,
-    "question": "Una donna di 55 anni si presenta in ambulatorio riferendo dolori ossei diffusi da circa 6 mesi. Riferisce, inoltre, episodi ricorrenti di nausea e poliuria. L’anamnesi è negativa per patologie significative, ma segnala una recente frattura del radio sinistro in seguito a una banale caduta. Gli esami di laboratorio e strumentali depongono per la diagnosi di iperparatiroidismo primitivo (evidenza di lesione ben capsulata della paratiroide superiore destra suggestiva per adenoma paratiroideo). Quale tra i seguenti è il trattamento indicato per l’iperparatiroidismo primitivo?",
-    "options": [
-      {
-        "id": "A",
-        "text": "Paratiroidectomia chirurgica mirata"
-      },
-      {
-        "id": "B",
-        "text": "Terapia Radiante del collo"
-      },
-      {
-        "id": "C",
-        "text": "Farmaci Antiparatiroidei per 6 mesi e successiva rivalutazione"
-      },
-      {
-        "id": "D",
-        "text": "Dieta povera di Calcio e calcioantagonisti"
-      },
-      {
-        "id": "E",
-        "text": "Somministrazione di Radioisotopi in ambiente protetto"
-      }
-    ],
-    "correct_option_id": "A",
-    "commentary": "Nell’iperparatiroidismo primitivo sintomatico, con manifestazioni ossee (come la frattura da fragilità) e renali (poliuria da ipercalciuria), sostenuto da un adenoma singolo ben localizzato, il trattamento di scelta è la paratiroidectomia chirurgica mirata (minimamente invasiva). L’intervento viene preceduto da un’accurata localizzazione preoperatoria (ecografia del collo e scintigrafia con Sestamibi) e guidato intraoperatoriamente dal dosaggio rapido del PTH, per confermare la radicalità dell’asportazione dell’adenoma."
-  },
-  {
-    "number": 3,
-    "question": "Un uomo di 45 anni si presenta in Pronto Soccorso, dopo una caduta, con una ferita lacero-contusa del braccio destro. La ferita è lunga circa 6 cm, con bordi netti e moderata contaminazione da terriccio. Non vi sono segni di lesioni di muscoli o di strutture vascolo-nervose. L’anamnesi è negativa per diabete o altre patologie significative. Il paziente è in regola con la vaccinazione antitetanica. La ferita viene trattata con detersione accurata con soluzione fisiologica e soluzione antisettica, i margini della ferita vengono accostati e suturati. La chiusura di una ferita con sutura è definita:",
-    "options": [
-      {
-        "id": "A",
-        "text": "Chiusura per prima intenzione"
-      },
-      {
-        "id": "B",
-        "text": "Chiusura per seconda intenzione"
-      },
-      {
-        "id": "C",
-        "text": "Granulazione spontanea"
-      },
-      {
-        "id": "D",
-        "text": "Accostamento fisiologico dei margini"
-      },
-      {
-        "id": "E",
-        "text": "Accostamento forzato dei margini"
-      }
-    ],
-    "correct_option_id": "A",
-    "commentary": "La chiusura per prima intenzione consiste nell’accostamento chirurgico immediato dei margini di una ferita pulita o pulita-contaminata, mediante sutura, entro poche ore dal trauma: permette una guarigione rapida, con minima formazione di tessuto di granulazione e una cicatrice lineare. Si differenzia dalla chiusura per seconda intenzione, riservata alle ferite molto contaminate o infette, che vengono lasciate aperte a guarire spontaneamente per granulazione e successiva riepitelizzazione."
-  },
-  {
-    "number": 4,
-    "question": "Una donna di 48 anni si presenta per una visita senologica dopo aver scoperto un nodulo palpabile (autopalpazione) nel quadrante superiore esterno della mammella destra. La mammografia conferma la presenza di un nodulo singolo “spiculato” di circa 2,5 cm. Durante l’esame clinico, si apprezzano linfonodi ascellari omolaterali palpabili, non dolenti. I linfonodi ascellari di secondo livello sono situati:",
-    "options": [
-      {
-        "id": "A",
-        "text": "Posteriormente al muscolo piccolo pettorale"
-      },
-      {
-        "id": "B",
-        "text": "Lateralmente al muscolo piccolo pettorale"
-      },
-      {
-        "id": "C",
-        "text": "Lungo tutto il decorso dell’arteria ascellare"
-      },
-      {
-        "id": "D",
-        "text": "All’apice del cavo ascellare"
-      },
-      {
-        "id": "E",
-        "text": "Medialmente al muscolo piccolo pettorale"
-      }
-    ],
-    "correct_option_id": "A",
-    "commentary": "La classificazione di Berg suddivide i linfonodi ascellari in tre livelli in base al rapporto con il muscolo piccolo pettorale: il livello I è laterale (inferiore/esterno) rispetto al muscolo, il livello II è posteriore, cioè situato dietro il muscolo piccolo pettorale, e il livello III è mediale/apicale, al di sopra e medialmente al suo margine superiore. Questa distinzione topografica è fondamentale per la stadiazione chirurgica del carcinoma mammario e per la pianificazione della dissezione ascellare."
-  },
-  {
-    "number": 5,
-    "question": "Un paziente di 40 anni con indice di massa corporea di 35 viene sottoposto agli accertamenti preoperatori di routine per successivo intervento di chirurgia bariatrica mini-invasiva. All’endoscopia preoperatoria viene riscontrata la presenza di un’ernia iatale di tipo 1 con quadro deponente per esofago di Barrett confermato istologicamente (assenza di displasia). Quale intervento chirurgico bariatrico/metabolico è più raccomandato tra i seguenti?",
-    "options": [
-      {
-        "id": "A",
-        "text": "By-pass gastrico con ansa alla Roux con contestuale riparazione dell’ernia iatale"
-      },
-      {
-        "id": "B",
-        "text": "Bendaggio gastrico regolabile senza riparazione dell’ernia iatale"
-      },
-      {
-        "id": "C",
-        "text": "Sleeve gastrectomy con riparazione dell’ernia iatale"
-      },
-      {
-        "id": "D",
-        "text": "One Anastomosis Gastric Bypass (OAGB) senza riparazione del difetto iatale"
-      },
-      {
-        "id": "E",
-        "text": "Single Anastomosis Duodeno-Ileal bypass SADI-S"
-      }
-    ],
-    "correct_option_id": "A",
-    "commentary": "In presenza di esofago di Barrett, anche in assenza di displasia, la sleeve gastrectomy è sconsigliata perché può aggravare il reflusso gastroesofageo e favorire la progressione della metaplasia. Il bypass gastrico con ansa alla Roux (RYGB) è invece l’intervento bariatrico di scelta in questi pazienti, poiché riduce l’esposizione acida dell’esofago residuo, e va sempre associato alla riparazione contestuale dell’ernia iatale per ottimizzare il controllo del reflusso."
-  },
-  {
-    "number": 6,
     "question": "Un giovane di 28 anni si presenta all'attenzione medica riferendo la comparsa di pomfi pruriginosi di piccole dimensioni (1-2 mm) circondati da un'area di eritema, dopo esercizio fisico o episodi febbrili. Come si definisce tale manifestazione?",
     "options": [
       {
@@ -168,7 +28,35 @@
     "commentary": "L'orticaria colinergica (CU) è un tipo di orticaria fisica che appare durante la sudorazione o quando la temperatura corporea aumenta. È causata da un rilascio di istamina, nel momento in cui si sta per sudare (ma non si suda), dovuto all'attivazione anomala dei mastociti. Questo comportamento dei mastociti è causato da un'elevata quantità di acetilcolina (da qui il nome colinergica), rilasciata normalmente per attivare le ghiandole sudoripare. Si presenta con pomfi piccoli di breve durata, che spesso hanno un alone eritematoso attorno. I sintomi diminuiscono entro 1 h. La terapia più diffusa è la fototerapia con raggi UVB, la quale rallenta la crescita degli strati più esterni dell'epidermide. Inoltre la terapia con antistaminici non è molto efficace."
   },
   {
-    "number": 7,
+    "number": 2,
+    "question": "Un uomo di 50 anni si presenta in ambulatorio lamentando difficoltà nella deglutizione da circa 6 mesi. Riferisce che il problema si manifesta prevalentemente con i liquidi, mentre i cibi solidi sono deglutiti con minor difficoltà (disfagia paradossa). Negli ultimi due mesi, ha perso circa 5 kg. Non riferisce dolore toracico, rigurgito o pirosi retrosternale, ma riferisce una sensazione di “cibo bloccato” in regione retrosternale media. La radiografia del torace è negativa, l’esofagogramma con bario evidenzia un esofago dilatato con restringimento “a coda di topo” al livello della giunzione gastroesofagea. Per quale tra le seguenti diagnosi depone con maggiore probabilità il quadro clinico-radiologico rappresentato?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Acalasia esofagea"
+      },
+      {
+        "id": "B",
+        "text": "Stenosi organica dell’esofago distale"
+      },
+      {
+        "id": "C",
+        "text": "Malformazione dell’esofago"
+      },
+      {
+        "id": "D",
+        "text": "Sindrome di Mallory-Weiss"
+      },
+      {
+        "id": "E",
+        "text": "Stenosi esofagea distale neoplastica"
+      }
+    ],
+    "correct_option_id": "A",
+    "commentary": "La diagnosi di acalasia esofagea si basa su un quadro clinico-radiologico tipico: disfagia paradossa (più marcata per i liquidi che per i solidi), calo ponderale e, all’esofagogramma con bario, il caratteristico aspetto “a becco d’uccello” (o “a coda di topo”) a livello della giunzione esofago-gastrica. Il quadro è dovuto al mancato rilasciamento dello sfintere esofageo inferiore associato ad aperistalsi del corpo esofageo, per degenerazione del plesso mioenterico di Auerbach. La manometria esofagea ad alta risoluzione è l’esame di conferma diagnostica. Nei pazienti con calo ponderale significativo è comunque sempre indicata l’endoscopia digestiva alta, per escludere una pseudoacalasia secondaria a neoplasia della giunzione gastroesofagea."
+  },
+  {
+    "number": 3,
     "question": "L'esofago di Barrett è costituito da una condizione in cui è sempre presente:",
     "options": [
       {
@@ -196,7 +84,7 @@
     "commentary": "Con \"esofago di Barrett\" si definisce la sostituzione del normale epitelio squamoso dell'esofago distale con un epitelio colonnare metaplastico (simile a quello gastrico). Tale sostituzione avviene in genere durante la fase di guarigione dall'esofagite acuta. La maggior parte degli adenocarcinomi esofagei insorge su un quadro di esofago di Barrett. In endoscopia, l'esofago di Barrett presenta delle bande rosse di epitelio metaplastico che si estendono prossimalmente, a partire dallo sfintere esofageo inferiore. I pazienti con esofago di Barrett necessitano di un intenso trattamento a lungo termine per la malattia da reflusso gastroesofageo e di una sorveglianza endoscopica per il rischio di trasformazione maligna, con follow-up a intervalli di 3-12 mesi, a seconda del grado della metaplasia."
   },
   {
-    "number": 8,
+    "number": 4,
     "question": "La rettocolite ulcerosa è:",
     "options": [
       {
@@ -224,7 +112,35 @@
     "commentary": "La rettocolite ulcerosa (RCU) è una malattia infiammatoria cronica intestinale (IBD); è caratterizzata istologicamente da lesioni continue, senza interruzione, della mucosa intestinale. Questa caratteristica la differenzia dal Morbo di Crohn, altra IBD, che presenta delle lesioni \"a salto\", ovvero discontinue per l'interposizione di tratti di mucosa intestinale indenne dalla malattia. La RCU non si associa alla diverticolosi e non è una malattia acuta, bensì cronica (come da definizione). Come suggerito dal nome stesso della malattia, si parla di retto-colite, quindi vi è un interessamento del retto e, in senso retrogrado, anche del colon, con estensione talvolta fino al cieco."
   },
   {
-    "number": 9,
+    "number": 5,
+    "question": "Una donna di 55 anni si presenta in ambulatorio riferendo dolori ossei diffusi da circa 6 mesi. Riferisce, inoltre, episodi ricorrenti di nausea e poliuria. L’anamnesi è negativa per patologie significative, ma segnala una recente frattura del radio sinistro in seguito a una banale caduta. Gli esami di laboratorio e strumentali depongono per la diagnosi di iperparatiroidismo primitivo (evidenza di lesione ben capsulata della paratiroide superiore destra suggestiva per adenoma paratiroideo). Quale tra i seguenti è il trattamento indicato per l’iperparatiroidismo primitivo?",
+    "options": [
+      {
+        "id": "A",
+        "text": "Paratiroidectomia chirurgica mirata"
+      },
+      {
+        "id": "B",
+        "text": "Terapia Radiante del collo"
+      },
+      {
+        "id": "C",
+        "text": "Farmaci Antiparatiroidei per 6 mesi e successiva rivalutazione"
+      },
+      {
+        "id": "D",
+        "text": "Dieta povera di Calcio e calcioantagonisti"
+      },
+      {
+        "id": "E",
+        "text": "Somministrazione di Radioisotopi in ambiente protetto"
+      }
+    ],
+    "correct_option_id": "A",
+    "commentary": "Nell’iperparatiroidismo primitivo sintomatico, con manifestazioni ossee (come la frattura da fragilità) e renali (poliuria da ipercalciuria), sostenuto da un adenoma singolo ben localizzato, il trattamento di scelta è la paratiroidectomia chirurgica mirata (minimamente invasiva). L’intervento viene preceduto da un’accurata localizzazione preoperatoria (ecografia del collo e scintigrafia con Sestamibi) e guidato intraoperatoriamente dal dosaggio rapido del PTH, per confermare la radicalità dell’asportazione dell’adenoma."
+  },
+  {
+    "number": 6,
     "question": "Nei pazienti affetti da Linfoma di Burkitt, soprattutto nella variante endemica, è stata dimostrata pregressa infezione da:",
     "options": [
       {
@@ -252,7 +168,7 @@
     "commentary": "Il linfoma di Burkitt è un linfoma a cellule B particolarmente aggressivo. Si presenta con forme endemiche (come la variante africana), sporadiche (variante non-africana) e correlate all'immunodeficienza. La malattia è strettamente associata all'infezione da virus di Epstein-Barr (EBV), in particolare nella forma endemica. Ricordiamo che la traslocazione distintiva del linfoma di Burkitt è quella del gene c-myc, dal cromosoma 8 al 14."
   },
   {
-    "number": 10,
+    "number": 7,
     "question": "Si definiscono tofi:",
     "options": [
       {
@@ -280,7 +196,35 @@
     "commentary": "I \"tofi\" sono delle masse nodulari contenenti cristalli di urato che si depositano nei tessuti molli dei pazienti affetti da gotta, non adeguatamente trattata. In media si formano 12 anni dopo il primo attacco di gotta. I precipitati antigene-anticorpo sono chiamati immunocomplessi, mentre le lesioni del pemfigoide sono delle lesioni di tipo bolloso."
   },
   {
-    "number": 11,
+    "number": 8,
+    "question": "Un uomo di 45 anni si presenta in Pronto Soccorso, dopo una caduta, con una ferita lacero-contusa del braccio destro. La ferita è lunga circa 6 cm, con bordi netti e moderata contaminazione da terriccio. Non vi sono segni di lesioni di muscoli o di strutture vascolo-nervose. L’anamnesi è negativa per diabete o altre patologie significative. Il paziente è in regola con la vaccinazione antitetanica. La ferita viene trattata con detersione accurata con soluzione fisiologica e soluzione antisettica, i margini della ferita vengono accostati e suturati. La chiusura di una ferita con sutura è definita:",
+    "options": [
+      {
+        "id": "A",
+        "text": "Chiusura per prima intenzione"
+      },
+      {
+        "id": "B",
+        "text": "Chiusura per seconda intenzione"
+      },
+      {
+        "id": "C",
+        "text": "Granulazione spontanea"
+      },
+      {
+        "id": "D",
+        "text": "Accostamento fisiologico dei margini"
+      },
+      {
+        "id": "E",
+        "text": "Accostamento forzato dei margini"
+      }
+    ],
+    "correct_option_id": "A",
+    "commentary": "La chiusura per prima intenzione consiste nell’accostamento chirurgico immediato dei margini di una ferita pulita o pulita-contaminata, mediante sutura, entro poche ore dal trauma: permette una guarigione rapida, con minima formazione di tessuto di granulazione e una cicatrice lineare. Si differenzia dalla chiusura per seconda intenzione, riservata alle ferite molto contaminate o infette, che vengono lasciate aperte a guarire spontaneamente per granulazione e successiva riepitelizzazione."
+  },
+  {
+    "number": 9,
     "question": "La dopamina:",
     "options": [
       {
@@ -308,7 +252,7 @@
     "commentary": "La via biosintetica delle catecolamine è la seguente: tirosina > dopa > dopamina > noradrenalina > adrenalina. Dunque, la dopamina è il precursore di noradrenalina e adrenalina. La dopamina, infatti, può parzialmente legarsi e agire come agonista a livello dei recettori adrenergici e agisce anche a livello centrale nelle vie meso-corticale, mesolimbica, tuberoinfundibolare e nigrostriatale."
   },
   {
-    "number": 12,
+    "number": 10,
     "question": "Il trattamento di prima linea (il più importante da somministrare) dello shock anafilattico prevede somministrazione di:",
     "options": [
       {
@@ -336,7 +280,35 @@
     "commentary": "L'adrenalina è il trattamento di prima linea nello shock anafilattico. L'adrenalina, infatti, è in grado di inibire il rilascio dei mediatori responsabili dell'infiammazione dai mastociti e dai basofili e inibisce direttamente la vasodilatazione, l'edema e la broncocostrizione. Le indicazioni terapeutiche nello shock anafilattico sono quelle di somministrare adrenalina nella forma 1:1000 i.m. o s.c., oppure diluire una fiala da 0,5 mg di adrenalina 1:1000 in 10 cc di soluzione fisiologica e iniettare lentamente ev."
   },
   {
-    "number": 13,
+    "number": 11,
+    "question": "Una donna di 48 anni si presenta per una visita senologica dopo aver scoperto un nodulo palpabile (autopalpazione) nel quadrante superiore esterno della mammella destra. La mammografia conferma la presenza di un nodulo singolo “spiculato” di circa 2,5 cm. Durante l’esame clinico, si apprezzano linfonodi ascellari omolaterali palpabili, non dolenti. I linfonodi ascellari di secondo livello sono situati:",
+    "options": [
+      {
+        "id": "A",
+        "text": "Posteriormente al muscolo piccolo pettorale"
+      },
+      {
+        "id": "B",
+        "text": "Lateralmente al muscolo piccolo pettorale"
+      },
+      {
+        "id": "C",
+        "text": "Lungo tutto il decorso dell’arteria ascellare"
+      },
+      {
+        "id": "D",
+        "text": "All’apice del cavo ascellare"
+      },
+      {
+        "id": "E",
+        "text": "Medialmente al muscolo piccolo pettorale"
+      }
+    ],
+    "correct_option_id": "A",
+    "commentary": "La classificazione di Berg suddivide i linfonodi ascellari in tre livelli in base al rapporto con il muscolo piccolo pettorale: il livello I è laterale (inferiore/esterno) rispetto al muscolo, il livello II è posteriore, cioè situato dietro il muscolo piccolo pettorale, e il livello III è mediale/apicale, al di sopra e medialmente al suo margine superiore. Questa distinzione topografica è fondamentale per la stadiazione chirurgica del carcinoma mammario e per la pianificazione della dissezione ascellare."
+  },
+  {
+    "number": 12,
     "question": "Un medico sta rianimando un paziente in tachicardia ventricolare (TV) senza polso. Permane TV senza polso dopo l'erogazione di 3 scariche di defibrillatore e una dose di 1 mg di adrenalina. Quale farmaco occorre somministrare successivamente?",
     "options": [
       {
@@ -364,7 +336,7 @@
     "commentary": "Secondo le linee guida fornite dall'ACLS (advanced cardiovascular life support) per la rianimazione cardio-polmonare (RCP), dopo la terza scarica con defibrillatore di un ritmo shockabile (Tachicardia Ventricolare - TV o Fibrillazione Ventricolare FV), si somministra 1 mg di adrenalina e successivamente, in assenza di variazioni del quadro clinico, si somministrano in bolo 300 mg di Amiodarone (due fiale), seguiti da altri 2 cicli di RCP con 1 mg ulteriore di adrenalina e 2 altri shock con defibrillatore, prima di somministrare altri 150 mg di amiodarone."
   },
   {
-    "number": 14,
+    "number": 13,
     "question": "Un medico deve procedere a incannulazione dell'arteria radiale per il monitoraggio invasivo della pressione arteriosa. Prima della procedura è opportuno eseguire:",
     "options": [
       {
@@ -390,6 +362,34 @@
     ],
     "correct_option_id": "C",
     "commentary": "Il test di Allen (conosciuto anche come prova di Allen) è un test clinico che valuta la capacità dell'arteria ulnare di garantire un adeguato flusso di sangue alla mano in caso di occlusione dell'arteria radiale. L'arteria radiale potrebbe occludersi e non essere più in grado di espletare la propria funzione in seguito a manovre invasive come emogas o puntura arteriosa per l'accesso di cateteri endoarteriosi, come nello scenario presentato. Prima di incannulare l'arteria radiale è opportuno eseguire un test di Allen per accertarsi che il flusso sanguigno alla mano sia vicariato dall'arteria ulnare."
+  },
+  {
+    "number": 14,
+    "question": "Un paziente di 40 anni con indice di massa corporea di 35 viene sottoposto agli accertamenti preoperatori di routine per successivo intervento di chirurgia bariatrica mini-invasiva. All’endoscopia preoperatoria viene riscontrata la presenza di un’ernia iatale di tipo 1 con quadro deponente per esofago di Barrett confermato istologicamente (assenza di displasia). Quale intervento chirurgico bariatrico/metabolico è più raccomandato tra i seguenti?",
+    "options": [
+      {
+        "id": "A",
+        "text": "By-pass gastrico con ansa alla Roux con contestuale riparazione dell’ernia iatale"
+      },
+      {
+        "id": "B",
+        "text": "Bendaggio gastrico regolabile senza riparazione dell’ernia iatale"
+      },
+      {
+        "id": "C",
+        "text": "Sleeve gastrectomy con riparazione dell’ernia iatale"
+      },
+      {
+        "id": "D",
+        "text": "One Anastomosis Gastric Bypass (OAGB) senza riparazione del difetto iatale"
+      },
+      {
+        "id": "E",
+        "text": "Single Anastomosis Duodeno-Ileal bypass SADI-S"
+      }
+    ],
+    "correct_option_id": "A",
+    "commentary": "In presenza di esofago di Barrett, anche in assenza di displasia, la sleeve gastrectomy è sconsigliata perché può aggravare il reflusso gastroesofageo e favorire la progressione della metaplasia. Il bypass gastrico con ansa alla Roux (RYGB) è invece l’intervento bariatrico di scelta in questi pazienti, poiché riduce l’esposizione acida dell’esofago residuo, e va sempre associato alla riparazione contestuale dell’ernia iatale per ottimizzare il controllo del reflusso."
   },
   {
     "number": 15,

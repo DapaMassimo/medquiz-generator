@@ -18,11 +18,9 @@ explanations) is in Italian.
   its labels from its source section. The taxonomy is a run deliverable (`taxonomy.json`).
 - **SSM style** — clinical vignette where the content allows it, 5 options (A–E), one correct,
   2–4 sentence explanation, few-shot on real exam questions (`medquiz_generator/resources/ssm/ssm_examples.txt`,
-  also available as structured `ssm_examples.json`). The correct option position is rotated
-  across the few-shot examples so the model never learns "the answer is always A"; the run
-  report shows the distribution of correct options among delivered questions. With a pool
-  larger than the per-call bound, the examples closest to each section are selected by
-  embedding similarity (vignette and factual registers both represented).
+  also available as structured `ssm_examples.json`). With a pool larger than the per-call
+  bound, the examples closest to each section are selected by embedding similarity (vignette
+  and factual registers both represented).
 - **Anti-hallucination, two levels** — deterministic checks (5 distinct non-empty options,
   one correct, quote *really* present in the section text with whitespace/punctuation-normalised
   matching, page in range) and an **independent LLM judge** that sees only the cited passage.
@@ -183,7 +181,7 @@ USD from `pricing.json`, duration, stage, unit, question). `run_report.json` agg
 - sections/units planned vs covered; generated / verified / flagged / discarded with reasons;
 - deterministic-check failures vs judge verdicts; duplicates;
 - duration per stage (with the error message when a stage failed); tokens and cost per
-  stage, per unit, per question; distribution of the correct option letter;
+  stage, per unit, per question;
 - **cost per delivered question** — the number to extrapolate to a whole library.
 
 `medquiz report` prints it; the UI shows it in the *Report* tab. Indicative figures with

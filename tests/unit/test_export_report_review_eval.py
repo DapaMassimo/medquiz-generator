@@ -128,7 +128,6 @@ def test_report_aggregates_usage_and_counts(ctx: RunContext) -> None:
     assert report.cost_per_delivered_question_usd == pytest.approx(1.0)
     assert report.models == {"generate": "fake-generator", "verify": "fake-judge"}
     assert report.discard_reasons == {"deterministic: quote_missing": 1}
-    assert report.correct_option_distribution == {"A": 2, "B": 0, "C": 0, "D": 0, "E": 0}
     assert report.schema_version == 1
     stored = ctx.store.load(ctx.run_id, artifacts.RUN_REPORT, RunReport)
     assert stored.run_id == ctx.run_id
