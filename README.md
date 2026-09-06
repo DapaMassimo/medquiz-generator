@@ -162,7 +162,7 @@ Discarded questions never reach an export; flagged ones only with `--include-fla
 | `MQ_DOCLING_DO_OCR` | `false` | OCR (only for scanned PDFs) |
 | `MQ_PLAN_MIN_UNIT_CHARS` | `600` | Small sibling sections are merged into one unit |
 | `MQ_MAX_EXAMPLES_IN_PROMPT` | `5` | Upper bound of few-shot examples per generation call (3–5) |
-| `MQ_EXAMPLES_SELECTION` | `semantic` | `semantic` = examples closest to the section by embedding (only when the pool exceeds the bound, both registers guaranteed) \| `first` |
+| `MQ_EXAMPLES_SELECTION` | `random` | `random` = k drawn from the whole pool, seeded by the section so re-runs reproduce \| `first` = the first k, same for every unit \| `semantic` = closest by embedding (off until the pool is large enough that most slots find real neighbours) |
 | `MQ_EXAMPLES_MIN_SIMILARITY` | `0.3` | Cosine below which a semantic match is not convincing; missing slots fall back to the first examples of the file |
 | `MQ_VERIFY_JUDGE_ENABLED` | `true` | `false` = deterministic checks only |
 | `MQ_DEDUP_ENABLED` / `MQ_DEDUP_THRESHOLD` | `true` / `0.92` | Near-duplicate flagging |

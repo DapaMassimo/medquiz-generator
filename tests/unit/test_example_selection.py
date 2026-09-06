@@ -7,6 +7,7 @@ from medquiz_generator.application.classify import ClassifyStage
 from medquiz_generator.application.context import RunContext
 from medquiz_generator.application.example_selection import (
     FirstNExampleSelector,
+    RandomExampleSelector,
     SemanticExampleSelector,
     example_text,
     is_clinical_vignette,
@@ -178,3 +179,35 @@ def test_settings_bound_max_examples() -> None:
         Settings(_env_file=None, max_examples_in_prompt=8)  # type: ignore[call-arg]
     with pytest.raises(ValueError):
         Settings(_env_file=None, max_examples_in_prompt=2)  # type: ignore[call-arg]
+
+
+def test_random_selector_is_reproducible_for_the_same_section() -> None:
+    """A run must be repeatable: the same section always draws the same examples."""
+    selector = RandomExampleSelector(POOL)
+    first = [e.number for e in selector.select("sezione sulle aritmie", 3)]
+    again = [e.number for e in RandomExampleSelector(POOL).select("sezione sulle aritmie", 3)]
+    assert first == again
+    assert len(first) == 3 and len(set(first)) == 3
+
+
+def test_random_selector_varies_across_sections() -> None:
+    """The point over FirstN: different units see different slices of the pool."""
+    selector = RandomExampleSelector(POOL)
+    draws = {
+        tuple(e.number for e in selector.select(f"sezione numero {i} del manuale", 3))
+        for i in range(12)
+    }
+    assert len(draws) > 1, "every section drew the same examples"
+    reached = {number for draw in draws for number in draw}
+    assert len(reached) > 3, "the draw never leaves the head of the pool"
+
+
+def test_random_selector_returns_the_whole_pool_when_it_is_smaller_than_k() -> None:
+    selector = RandomExampleSelector(POOL[:2])
+    assert len(selector.select("qualsiasi sezione", 5)) == 2
+    assert selector.select("qualsiasi sezione", 0) == []
+    assert RandomExampleSelector([]).select("qualsiasi sezione", 5) == []
+
+
+def test_random_selector_declares_its_strategy() -> None:
+    assert RandomExampleSelector(POOL).strategy == "random"

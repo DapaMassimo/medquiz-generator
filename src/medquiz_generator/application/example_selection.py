@@ -1,17 +1,25 @@
 """Few-shot example selection for the generator.
 
-With a small pool (≤ k) every example is used. With a larger pool the semantic selector picks
-the k examples closest to the section being processed (embedding cosine similarity), while
-making sure both registers — clinical vignette and direct factual question — are represented
-when the pool contains both. Only matches above a similarity threshold count as convincing;
-missing slots fall back to the first examples of the file (the FirstN behaviour), so a
-section with no good semantic neighbour still gets a full, stable few-shot block.
-Selection never touches the prompts: the generator receives a plain list of examples.
+Three strategies, all returning a plain list of examples — selection never touches the prompts.
+
+* ``random`` (default): k examples drawn from the whole pool, the draw seeded by the section
+  so a re-run reproduces it. Every unit of the document sees a different slice of the pool.
+* ``first``: the first k of the file, in file order. Every unit sees the same k.
+* ``semantic``: the k nearest to the section by embedding similarity, keeping both registers
+  — clinical vignette and direct factual question — represented, with slots that clear no
+  similarity threshold filled from the head of the file.
+
+Semantic is off by default. It only pays off once the pool is large enough to hold genuine
+neighbours for most sections: below that, few candidates clear the threshold, most slots come
+from the fallback, and the result converges on ``first`` while still paying for the
+embeddings. Turn it on with ``MQ_EXAMPLES_SELECTION=semantic`` after the pool grows.
 """
 
 from __future__ import annotations
 
+import hashlib
 import logging
+import random
 import re
 
 from medquiz_generator.application.dedup import cosine
@@ -51,6 +59,37 @@ class FirstNExampleSelector:
 
     def select(self, query: str, k: int) -> list[SsmExample]:
         return self._examples[: max(0, k)]
+
+
+class RandomExampleSelector:
+    """k examples drawn from the whole pool, deterministically per section.
+
+    The draw is seeded from the section text, which buys both properties at once: a given
+    section always gets the same examples, so re-running the generate stage reproduces the
+    run, while different sections get different draws. FirstN gives the second property up
+    entirely — with 19 examples and k=5 it shows the same five questions to every unit of
+    the document, and the other fourteen never reach the model.
+
+    The seed comes from blake2b rather than ``hash()``, which is salted per process and would
+    make the same run irreproducible across invocations. The draw uses its own Random
+    instance so it stays independent of any other use of the module-level generator.
+    """
+
+    def __init__(self, examples: list[SsmExample]) -> None:
+        self._examples = list(examples)
+
+    @property
+    def strategy(self) -> str:
+        return "random"
+
+    def select(self, query: str, k: int) -> list[SsmExample]:
+        if k <= 0 or not self._examples:
+            return []
+        if len(self._examples) <= k:
+            return list(self._examples)
+        digest = hashlib.blake2b(query.encode("utf-8"), digest_size=8).digest()
+        rng = random.Random(int.from_bytes(digest, "big"))
+        return rng.sample(self._examples, k)
 
 
 class SemanticExampleSelector:

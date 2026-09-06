@@ -34,6 +34,7 @@ from medquiz_generator.application.dedup import DedupStage
 from medquiz_generator.application.eval import EvalStage
 from medquiz_generator.application.example_selection import (
     FirstNExampleSelector,
+    RandomExampleSelector,
     SemanticExampleSelector,
 )
 from medquiz_generator.application.examples import load_ssm_examples
@@ -169,13 +170,22 @@ class Container:
 
     def example_selector(self, tracker: UsageTracker) -> ExampleSelector:
         s = self.settings
-        if s.examples_selection == "semantic" and len(self.examples) > s.max_examples_in_prompt:
-            return SemanticExampleSelector(
-                self.embedding_provider(tracker),
-                self.examples,
-                min_similarity=s.examples_min_similarity,
+        if s.examples_selection == "semantic":
+            if len(self.examples) > s.max_examples_in_prompt:
+                return SemanticExampleSelector(
+                    self.embedding_provider(tracker),
+                    self.examples,
+                    min_similarity=s.examples_min_similarity,
+                )
+            log.warning(
+                "MQ_EXAMPLES_SELECTION=semantic but the pool holds %d examples for %d slots: "
+                "every section would get all of them. Drawing at random instead.",
+                len(self.examples),
+                s.max_examples_in_prompt,
             )
-        return FirstNExampleSelector(self.examples)
+        if s.examples_selection == "first":
+            return FirstNExampleSelector(self.examples)
+        return RandomExampleSelector(self.examples)
 
     # ------------------------------------------------------------------ stages
 

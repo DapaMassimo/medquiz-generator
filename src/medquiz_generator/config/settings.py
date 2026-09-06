@@ -63,9 +63,13 @@ class Settings(BaseSettings):
     plan_min_unit_chars: int = 600
     # Few-shot examples per generation call: an upper bound, between 3 and 5.
     max_examples_in_prompt: int = Field(default=5, ge=3, le=5)
-    # 'semantic' = closest examples to the section (embeddings), used only when the pool is
-    # larger than max_examples_in_prompt; 'first' = the first N of the file.
-    examples_selection: Literal["first", "semantic"] = "semantic"
+    # 'random' = k drawn from the whole pool, seeded by the section so re-runs reproduce;
+    # 'first' = the first N of the file, the same for every unit; 'semantic' = closest to the
+    # section by embedding, used only when the pool is larger than max_examples_in_prompt.
+    # Semantic stays off until the pool is large enough to hold real neighbours: below that
+    # most slots come from the fallback and it converges on 'first' while paying for the
+    # embeddings anyway.
+    examples_selection: Literal["first", "semantic", "random"] = "random"
     # Cosine similarity below which a semantic match is not convincing; missing slots are then
     # filled with the first examples of the file (FirstN fallback).
     examples_min_similarity: float = Field(default=0.3, ge=0.0, le=1.0)
