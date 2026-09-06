@@ -99,3 +99,5 @@ def test_plan_stage_persists_and_requires_document(
     assert ctx.meta().total_questions == 12
     timings = ctx.store.read_jsonl(ctx.run_id, artifacts.TIMINGS_LOG, StageTiming)
     assert [(t.stage, t.status) for t in timings] == [("plan", "failed"), ("plan", "ok")]
+    assert timings[0].error is not None and timings[0].error.startswith("StageInputMissingError")
+    assert timings[1].error is None

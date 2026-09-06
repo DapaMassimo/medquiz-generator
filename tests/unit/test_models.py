@@ -1,6 +1,8 @@
 from __future__ import annotations
 
 from medquiz_generator.domain.models import (
+    SCHEMA_VERSION,
+    GenerationPlan,
     QuestionStatus,
     RunReport,
     StyleScores,
@@ -52,3 +54,24 @@ def test_run_report_cost_per_delivered_question() -> None:
     )
     assert report.cost_per_delivered_question_usd == 0.1
     assert RunReport(run_id="r").cost_per_delivered_question_usd is None
+
+
+def test_persisted_artifacts_carry_schema_version() -> None:
+    item = make_item()
+    assert item.schema_version == SCHEMA_VERSION
+    assert '"schema_version": 1' in item.model_dump_json(indent=1)
+    plan = GenerationPlan(
+        run_id="r", document_hash="h", total_questions=1, min_unit_chars=1, units=[]
+    )
+    assert plan.schema_version == SCHEMA_VERSION
+    # A file from an older run without the field still loads (additive default).
+    legacy = GenerationPlan.model_validate(
+        {
+            "run_id": "r",
+            "document_hash": "h",
+            "total_questions": 1,
+            "min_unit_chars": 1,
+            "units": [],
+        }
+    )
+    assert legacy.schema_version == SCHEMA_VERSION

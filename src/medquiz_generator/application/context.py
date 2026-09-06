@@ -78,10 +78,15 @@ class RunContext:
         t0 = time.perf_counter()
         self.log(f"stage {name} started")
         status: Literal["ok", "failed"] = "ok"
+        error: str | None = None
         try:
             yield
-        except BaseException:
+        except BaseException as exc:
             status = "failed"
+            error = f"{type(exc).__name__}: {exc}"[:2000]
+            self.logger.error(
+                f"stage {name} failed: {error}", extra={"ctx": {"run_id": self.run_id}}
+            )
             raise
         finally:
             duration = time.perf_counter() - t0
@@ -91,6 +96,7 @@ class RunContext:
                 started_at=started,
                 finished_at=datetime.now(UTC),
                 status=status,
+                error=error,
             )
             self.store.append_jsonl(self.run_id, artifacts.TIMINGS_LOG, timing)
             self.log(f"stage {name} finished", duration_s=round(duration, 3))

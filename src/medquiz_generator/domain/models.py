@@ -17,6 +17,11 @@ def utcnow() -> datetime:
     return datetime.now(UTC)
 
 
+# Bump when a persisted artefact changes shape in a non-additive way; loaders can then
+# dispatch migrations on this value instead of guessing the format of old runs.
+SCHEMA_VERSION = 1
+
+
 class Stage(StrEnum):
     PARSE = "parse"
     PLAN = "plan"
@@ -31,6 +36,7 @@ class Stage(StrEnum):
 class RunMeta(BaseModel):
     """Small header persisted per run: what was processed and with which parameters."""
 
+    schema_version: int = SCHEMA_VERSION
     run_id: str
     source_path: str = ""
     document_hash: str = ""
@@ -68,6 +74,7 @@ class Section(BaseModel):
 class StructuredDocument(BaseModel):
     """Output of the *parse* stage: a flat, ordered list of sections with page ranges."""
 
+    schema_version: int = SCHEMA_VERSION
     source_path: str
     content_hash: str
     title: str
@@ -107,6 +114,7 @@ class PlanUnit(BaseModel):
 class GenerationPlan(BaseModel):
     """Output of the *plan* stage. Hand-editable before generation."""
 
+    schema_version: int = SCHEMA_VERSION
     run_id: str
     document_hash: str
     total_questions: int = Field(ge=1)
@@ -141,6 +149,7 @@ class SectionLabel(BaseModel):
 class Taxonomy(BaseModel):
     """Output of the *classify* stage: subjects → topics → sections, extracted from the text."""
 
+    schema_version: int = SCHEMA_VERSION
     run_id: str
     document_hash: str
     source: Literal["extracted", "provided"] = "extracted"
@@ -212,6 +221,7 @@ class ModelMetadata(BaseModel):
 class QuizItem(BaseModel):
     """The deliverable: one SSM-style multiple-choice question with source and status."""
 
+    schema_version: int = SCHEMA_VERSION
     id: str
     materia: str
     argomento: str
@@ -282,6 +292,7 @@ class VerificationRecord(BaseModel):
 
 
 class VerificationReport(BaseModel):
+    schema_version: int = SCHEMA_VERSION
     run_id: str
     records: list[VerificationRecord]
     created_at: datetime = Field(default_factory=utcnow)
@@ -297,6 +308,7 @@ class DuplicatePair(BaseModel):
 
 
 class DedupReport(BaseModel):
+    schema_version: int = SCHEMA_VERSION
     run_id: str
     threshold: float
     pairs: list[DuplicatePair]
@@ -338,6 +350,7 @@ class EvalItemResult(BaseModel):
 
 
 class EvalReport(BaseModel):
+    schema_version: int = SCHEMA_VERSION
     run_id: str
     judge_model: str
     golden_style_count: int
@@ -366,6 +379,7 @@ class ReviewDecision(BaseModel):
 
 
 class ReviewState(BaseModel):
+    schema_version: int = SCHEMA_VERSION
     run_id: str
     decisions: dict[str, ReviewDecision] = Field(default_factory=dict)
 
@@ -373,6 +387,7 @@ class ReviewState(BaseModel):
 class GoldenItem(BaseModel):
     """A human-approved item promoted to the regression golden set."""
 
+    schema_version: int = SCHEMA_VERSION
     run_id: str
     promoted_at: datetime = Field(default_factory=utcnow)
     item: QuizItem
@@ -403,6 +418,7 @@ class StageTiming(BaseModel):
     started_at: datetime
     finished_at: datetime
     status: Literal["ok", "failed"] = "ok"
+    error: str | None = Field(default=None, description="Exception type and message on failure.")
 
 
 class UsageSummary(BaseModel):
@@ -421,6 +437,7 @@ class UsageSummary(BaseModel):
 class RunReport(BaseModel):
     """Persisted at the end of the pipeline (and refreshed after each stage)."""
 
+    schema_version: int = SCHEMA_VERSION
     run_id: str
     source_path: str = ""
     document_hash: str = ""
@@ -439,6 +456,9 @@ class RunReport(BaseModel):
     deterministic_failures: dict[str, int] = Field(default_factory=dict)
     judge_verdicts: dict[str, int] = Field(default_factory=dict)
     duplicates: int = 0
+    correct_option_distribution: dict[str, int] = Field(
+        default_factory=dict, description="Delivered questions per correct option id (A-E)."
+    )
     stage_timings: list[StageTiming] = Field(default_factory=list)
     usage_by_stage: dict[str, UsageSummary] = Field(default_factory=dict)
     usage_by_unit: dict[str, UsageSummary] = Field(default_factory=dict)

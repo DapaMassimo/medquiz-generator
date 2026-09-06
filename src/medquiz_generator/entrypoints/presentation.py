@@ -66,6 +66,11 @@ def render_report(report: RunReport) -> str:
         f"{report.flagged}  discarded: {report.discarded}  exported: {report.exported}  "
         f"duplicates: {report.duplicates}",
     ]
+    if report.correct_option_distribution:
+        lines.append(
+            "Correct option distribution (delivered): "
+            + ", ".join(f"{k}={v}" for k, v in report.correct_option_distribution.items())
+        )
     if report.deterministic_failures:
         lines.append(
             "Deterministic failures: "
@@ -86,8 +91,11 @@ def render_report(report: RunReport) -> str:
         lines.append("Stage timings:")
         lines.append(
             _table(
-                ["stage", "status", "seconds"],
-                [[t.stage, t.status, f"{t.duration_s:.2f}"] for t in report.stage_timings],
+                ["stage", "status", "seconds", "error"],
+                [
+                    [t.stage, t.status, f"{t.duration_s:.2f}", (t.error or "")[:60]]
+                    for t in report.stage_timings
+                ],
             )
         )
     if report.usage_by_stage:
