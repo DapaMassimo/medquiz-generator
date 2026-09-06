@@ -71,6 +71,7 @@ class Container:
             enabled=self.settings.langsmith_tracing,
             api_key=self.settings.langsmith_api_key,
             project=self.settings.langsmith_project,
+            endpoint=self.settings.langsmith_endpoint,
         )
 
     # ------------------------------------------------------------------ shared

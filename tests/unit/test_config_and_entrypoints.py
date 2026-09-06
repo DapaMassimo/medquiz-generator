@@ -96,6 +96,34 @@ def test_configure_tracing(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     monkeypatch.setenv("LANGSMITH_TRACING", "false")
 
 
+def test_configure_tracing_exports_the_workspace_region(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    """A .env line only reaches LangChain if configure_tracing re-exports it."""
+    monkeypatch.delenv("LANGSMITH_ENDPOINT", raising=False)
+    monkeypatch.delenv("LANGCHAIN_ENDPOINT", raising=False)
+    eu = "https://eu.api.smith.langchain.com"
+    assert configure_tracing(enabled=True, api_key="ls-key", project="p", endpoint=eu) is True
+    assert os.environ["LANGSMITH_ENDPOINT"] == eu
+    assert os.environ["LANGCHAIN_ENDPOINT"] == eu
+    monkeypatch.setenv("LANGSMITH_TRACING", "false")
+
+
+def test_configure_tracing_keeps_an_endpoint_already_in_the_environment(monkeypatch) -> None:  # type: ignore[no-untyped-def]
+    """An empty setting must not wipe a region exported by the real environment."""
+    exported = "https://eu.api.smith.langchain.com"
+    monkeypatch.setenv("LANGSMITH_ENDPOINT", exported)
+    assert configure_tracing(enabled=True, api_key="ls-key", project="p") is True
+    assert os.environ["LANGSMITH_ENDPOINT"] == exported
+    monkeypatch.setenv("LANGSMITH_TRACING", "false")
+
+
+def test_settings_read_the_endpoint_under_its_standard_name(tmp_path: Path) -> None:
+    """LANGSMITH_ENDPOINT keeps the vendor's name: no MQ_ prefix, like the API keys."""
+    env = tmp_path / "regione.env"
+    env.write_text("LANGSMITH_ENDPOINT=https://eu.api.smith.langchain.com\n", encoding="utf-8")
+    settings = Settings(_env_file=str(env))  # type: ignore[call-arg]
+    assert settings.langsmith_endpoint == "https://eu.api.smith.langchain.com"
+
+
 def test_log_formatters() -> None:
     record = logging.LogRecord("medquiz", logging.INFO, __file__, 1, "hello", None, None)
     record.ctx = {"run_id": "r1", "stage": "plan", "empty": ""}  # type: ignore[attr-defined]

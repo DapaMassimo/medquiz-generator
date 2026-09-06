@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     openai_api_key: str = Field(default="", validation_alias="OPENAI_API_KEY")
     anthropic_api_key: str = Field(default="", validation_alias="ANTHROPIC_API_KEY")
     langsmith_api_key: str = Field(default="", validation_alias="LANGSMITH_API_KEY")
+    # Region of the LangSmith workspace, e.g. https://eu.api.smith.langchain.com for the EU.
+    # Empty keeps LangSmith's own default (US).
+    langsmith_endpoint: str = Field(default="", validation_alias="LANGSMITH_ENDPOINT")
 
     # Models — the single place where provider/model choices live.
     llm_provider: Literal["openai", "anthropic"] = "openai"
