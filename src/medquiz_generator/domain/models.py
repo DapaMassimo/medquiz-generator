@@ -263,7 +263,7 @@ class GeneratedBatch(BaseModel):
 
 
 class SsmExample(BaseModel):
-    """A real exam question parsed from examples/ssm/ssm_examples.txt (golden style set)."""
+    """A real exam question parsed from the bundled SSM examples file (golden style set)."""
 
     number: int
     question: str

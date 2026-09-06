@@ -1,4 +1,4 @@
-"""Robust parser for ``examples/ssm/ssm_examples.txt`` (free-form real exam questions).
+"""Robust parser for the bundled ``ssm_examples.txt`` (free-form real exam questions).
 
 The file is the few-shot style reference for the generator and the *style golden set* for the
 eval harness. The format is loose ("Domanda N", option lines with ☑/☐ markers, a "Commento:"

@@ -59,6 +59,7 @@ from medquiz_generator.domain.ports import (
     UsageTracker,
 )
 from medquiz_generator.domain.usage import InMemoryUsageTracker, StaticPricingTable
+from medquiz_generator.resources import bundled_examples_path
 
 log = logging.getLogger(__name__)
 
@@ -88,7 +89,8 @@ class Container:
 
     @cached_property
     def examples(self) -> list[SsmExample]:
-        return load_ssm_examples(Path(self.settings.examples_path))
+        configured = self.settings.examples_path
+        return load_ssm_examples(Path(configured) if configured else bundled_examples_path())
 
     @cached_property
     def review(self) -> ReviewService:

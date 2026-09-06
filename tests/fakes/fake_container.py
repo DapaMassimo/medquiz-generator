@@ -34,7 +34,6 @@ def make_settings(tmp_path: Path, **overrides: object) -> Settings:
     values: dict[str, object] = {
         "runs_dir": str(tmp_path / "runs"),
         "golden_dir": str(tmp_path / "golden"),
-        "examples_path": str(REPO_ROOT / "examples" / "ssm" / "ssm_examples.txt"),
         "pricing_path": str(REPO_ROOT / "pricing.json"),
         "docling_cache_dir": str(tmp_path / "cache"),
         "langsmith_tracing": False,

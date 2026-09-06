@@ -1,6 +1,6 @@
 """Stage 8 — eval: rubric scoring of a run against the golden sets (opt-in harness).
 
-* Style golden set: the real SSM questions in ``examples/ssm/ssm_examples.txt``.
+* Style golden set: the real SSM questions in ``medquiz_generator/resources/ssm/ssm_examples.txt``.
 * Regression golden set: items approved by a human and promoted from the review UI.
 The style judge is a separate LLM call with its own prompt (not the verify judge).
 """

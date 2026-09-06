@@ -9,9 +9,10 @@ from medquiz_generator.adapters.storage.file_run_store import FileGoldenStore, F
 from medquiz_generator.application.context import RunContext
 from medquiz_generator.domain.models import StructuredDocument
 from medquiz_generator.domain.usage import InMemoryUsageTracker, ModelPrice, StaticPricingTable
+from medquiz_generator.resources import bundled_examples_path
 
 FIXTURES = Path(__file__).parent / "fixtures"
-EXAMPLES_PATH = Path(__file__).parent.parent / "examples" / "ssm" / "ssm_examples.txt"
+EXAMPLES_PATH = bundled_examples_path()
 
 
 @pytest.fixture(scope="session")

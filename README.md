@@ -17,7 +17,7 @@ explanations) is in Italian.
   are extracted from the document structure and normalised by an LLM; every question inherits
   its labels from its source section. The taxonomy is a run deliverable (`taxonomy.json`).
 - **SSM style** — clinical vignette where the content allows it, 5 options (A–E), one correct,
-  2–4 sentence explanation, few-shot on real exam questions (`examples/ssm/ssm_examples.txt`,
+  2–4 sentence explanation, few-shot on real exam questions (`medquiz_generator/resources/ssm/ssm_examples.txt`,
   also available as structured `ssm_examples.json`). The correct option position is rotated
   across the few-shot examples so the model never learns "the answer is always A"; the run
   report shows the distribution of correct options among delivered questions. With a pool
@@ -83,7 +83,7 @@ src/medquiz_generator/
 ├── composition/   container.py
 └── entrypoints/   cli.py (typer) · streamlit_app.py · presentation.py · logsetup.py
 tests/             fixtures/structured_document.json · fakes/ · unit/ · integration/ · eval/
-examples/ssm/      ssm_examples.txt (real exam questions: few-shot + style golden set)
+src/medquiz_generator/resources/ssm/  ssm_examples.txt/.json (few-shot + style golden set, shipped in the wheel)
 golden/regression/ items promoted from the review UI
 runs/<run_id>/     every artefact of a run (git-ignored)
 pricing.json       USD per 1M tokens per model
@@ -157,7 +157,7 @@ Discarded questions never reach an export; flagged ones only with `--include-fla
 | `MQ_EMBEDDING_MODEL` | `text-embedding-3-small` | Dedup embeddings |
 | `MQ_LLM_TEMPERATURE` | `0.1` | Low temperature for all structured calls |
 | `MQ_RUNS_DIR` / `MQ_GOLDEN_DIR` | `runs` / `golden` | Artefacts and promoted golden items |
-| `MQ_EXAMPLES_PATH` | `examples/ssm/ssm_examples.txt` | Few-shot + style golden set (`.txt` free text or `.json` structured) |
+| `MQ_EXAMPLES_PATH` | *(bundled)* | Override the packaged few-shot + style golden set (`.txt` free text or `.json` structured) |
 | `MQ_PRICING_PATH` | `pricing.json` | Price table (USD per 1M tokens) |
 | `MQ_DOCLING_CACHE_DIR` | `.cache/docling` | Parsed documents cached by content hash |
 | `MQ_DOCLING_ARTIFACTS_PATH` | – | Local Docling models for offline parsing |
@@ -197,7 +197,7 @@ from the embedding call. Update `pricing.json` when prices change.
 each delivered question on a 1–5 rubric — *SSM style, distractor quality, explanation clarity,
 groundedness* — against two golden sets:
 
-1. **Style golden set**: the real exam questions in `examples/ssm/ssm_examples.txt`.
+1. **Style golden set**: the real exam questions in `medquiz_generator/resources/ssm/ssm_examples.txt`.
 2. **Regression golden set**: questions that passed verification **and** were approved by a
    human, promoted from the review UI into `golden/regression/`. It grows with the project,
    so every prompt/model change can be measured before/after on the same references.

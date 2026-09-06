@@ -44,7 +44,8 @@ class Settings(BaseSettings):
     # Paths
     runs_dir: str = "runs"
     golden_dir: str = "golden"
-    examples_path: str = "examples/ssm/ssm_examples.txt"
+    # Empty means the file bundled in the wheel; set it to override with your own.
+    examples_path: str = ""
     pricing_path: str = "pricing.json"
 
     # Parsing (Docling)
