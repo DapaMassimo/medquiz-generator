@@ -48,6 +48,7 @@ class FakeGenerator:
         self._model_name = model_name
         self._mutate = mutate
         self.calls: list[tuple[str, int]] = []
+        self.examples_seen: list[list[int]] = []
 
     @property
     def model_name(self) -> str:
@@ -62,6 +63,7 @@ class FakeGenerator:
         label: SectionLabel | None,
     ) -> GeneratedBatch:
         self.calls.append((unit.id, n))
+        self.examples_seen.append([e.number for e in examples])
         if self._tracker is not None:
             self._tracker.record(
                 UsageRecord(

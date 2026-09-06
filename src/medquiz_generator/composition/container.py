@@ -32,6 +32,10 @@ from medquiz_generator.application.classify import ClassifyStage
 from medquiz_generator.application.context import RunContext
 from medquiz_generator.application.dedup import DedupStage
 from medquiz_generator.application.eval import EvalStage
+from medquiz_generator.application.example_selection import (
+    FirstNExampleSelector,
+    SemanticExampleSelector,
+)
 from medquiz_generator.application.examples import load_ssm_examples
 from medquiz_generator.application.export import ExportStage
 from medquiz_generator.application.generate import GenerateStage
@@ -47,6 +51,7 @@ from medquiz_generator.domain.models import SsmExample
 from medquiz_generator.domain.ports import (
     DocumentParser,
     EmbeddingProvider,
+    ExampleSelector,
     QuestionGenerator,
     QuestionJudge,
     StyleJudge,
@@ -145,15 +150,25 @@ class Container:
     def style_judge(self, tracker: UsageTracker) -> StyleJudge:
         return LangChainStyleJudge(self.structured_llm(self.settings.eval_judge_model, tracker))
 
-    def embeddings(self, tracker: UsageTracker) -> EmbeddingProvider | None:
-        if not self.settings.dedup_enabled:
-            return None
+    def embedding_provider(self, tracker: UsageTracker) -> EmbeddingProvider:
         s = self.settings
         return LangChainEmbeddings(
             build_embeddings("openai", s.embedding_model, api_key=s.openai_api_key),
             model_name=s.embedding_model,
             tracker=tracker,
         )
+
+    def embeddings(self, tracker: UsageTracker) -> EmbeddingProvider | None:
+        """Embeddings for the dedup stage (None when dedup is disabled)."""
+        if not self.settings.dedup_enabled:
+            return None
+        return self.embedding_provider(tracker)
+
+    def example_selector(self, tracker: UsageTracker) -> ExampleSelector:
+        s = self.settings
+        if s.examples_selection == "semantic" and len(self.examples) > s.max_examples_in_prompt:
+            return SemanticExampleSelector(self.embedding_provider(tracker), self.examples)
+        return FirstNExampleSelector(self.examples)
 
     # ------------------------------------------------------------------ stages
 
@@ -171,6 +186,7 @@ class Container:
             self.generator(ctx.tracker),
             self.examples,
             max_examples=self.settings.max_examples_in_prompt,
+            selector=self.example_selector(ctx.tracker),
         )
 
     def verify_stage(self, ctx: RunContext) -> VerifyStage:

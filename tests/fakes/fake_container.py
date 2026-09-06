@@ -76,7 +76,10 @@ class FakeContainer(Container):
     def style_judge(self, tracker: UsageTracker) -> StyleJudge:
         return FakeStyleJudge()
 
+    def embedding_provider(self, tracker: UsageTracker) -> EmbeddingProvider:
+        return FakeEmbeddings(tracker=tracker)
+
     def embeddings(self, tracker: UsageTracker) -> EmbeddingProvider | None:
         if not self.settings.dedup_enabled:
             return None
-        return FakeEmbeddings(tracker=tracker)
+        return self.embedding_provider(tracker)

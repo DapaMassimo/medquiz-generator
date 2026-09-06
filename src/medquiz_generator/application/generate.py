@@ -22,7 +22,7 @@ from medquiz_generator.domain.models import (
     StructuredDocument,
     Taxonomy,
 )
-from medquiz_generator.domain.ports import QuestionGenerator
+from medquiz_generator.domain.ports import ExampleSelector, QuestionGenerator
 from medquiz_generator.domain.text import contains_normalized
 
 
@@ -78,9 +78,19 @@ class GenerateStage:
         examples: list[SsmExample],
         *,
         max_examples: int = 5,
+        selector: ExampleSelector | None = None,
     ) -> None:
         self._generator = generator
-        self._examples = examples[:max_examples]
+        self._examples = list(examples)
+        self._max_examples = max_examples
+        self._selector = selector
+
+    def examples_for(self, sections: list[Section]) -> list[SsmExample]:
+        """Few-shot examples for a unit: selector-driven when configured, else the first N."""
+        if self._selector is None:
+            return self._examples[: self._max_examples]
+        query = "\n\n".join(f"{s.path_str}\n{s.text}" for s in sections)
+        return self._selector.select(query, self._max_examples)
 
     def run(self, ctx: RunContext, *, unit_ids: list[str] | None = None) -> list[QuizItem]:
         with ctx.stage(Stage.GENERATE):
@@ -109,9 +119,8 @@ class GenerateStage:
                     continue
                 label = taxonomy.label_for(sections[0].id)
                 ctx.tracker.set_context(unit_id=unit.id)
-                batch = self._generator.generate(
-                    unit, sections, unit.questions, self._examples, label
-                )
+                examples = self.examples_for(sections)
+                batch = self._generator.generate(unit, sections, unit.questions, examples, label)
                 new_items = [
                     to_quiz_item(
                         question,
@@ -131,6 +140,7 @@ class GenerateStage:
                     unit_id=unit.id,
                     requested=unit.questions,
                     produced=len(new_items),
+                    examples=[e.number for e in examples],
                 )
             ctx.tracker.set_context()
             ctx.store.save_list(ctx.run_id, artifacts.QUESTIONS_GENERATED, list(items))

@@ -89,6 +89,15 @@ class StyleJudge(Protocol):
     ) -> StyleScores: ...
 
 
+class ExampleSelector(Protocol):
+    """Chooses which few-shot examples to show the generator for a given section."""
+
+    @property
+    def strategy(self) -> str: ...
+
+    def select(self, query: str, k: int) -> list[SsmExample]: ...
+
+
 class EmbeddingProvider(Protocol):
     @property
     def model_name(self) -> str: ...

@@ -57,7 +57,11 @@ class Settings(BaseSettings):
 
     # Pipeline knobs
     plan_min_unit_chars: int = 600
-    max_examples_in_prompt: int = 5
+    # Few-shot examples per generation call: an upper bound, between 3 and 5.
+    max_examples_in_prompt: int = Field(default=5, ge=3, le=5)
+    # 'semantic' = closest examples to the section (embeddings), used only when the pool is
+    # larger than max_examples_in_prompt; 'first' = the first N of the file.
+    examples_selection: Literal["first", "semantic"] = "semantic"
     verify_judge_enabled: bool = True
     dedup_enabled: bool = True
     dedup_threshold: float = 0.92

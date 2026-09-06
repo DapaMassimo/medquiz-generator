@@ -20,7 +20,9 @@ explanations) is in Italian.
   2–4 sentence explanation, few-shot on real exam questions (`examples/ssm/ssm_examples.txt`,
   also available as structured `ssm_examples.json`). The correct option position is rotated
   across the few-shot examples so the model never learns "the answer is always A"; the run
-  report shows the distribution of correct options among delivered questions.
+  report shows the distribution of correct options among delivered questions. With a pool
+  larger than the per-call bound, the examples closest to each section are selected by
+  embedding similarity (vignette and factual registers both represented).
 - **Anti-hallucination, two levels** — deterministic checks (5 distinct non-empty options,
   one correct, quote *really* present in the section text with whitespace/punctuation-normalised
   matching, page in range) and an **independent LLM judge** that sees only the cited passage.
@@ -161,7 +163,8 @@ Discarded questions never reach an export; flagged ones only with `--include-fla
 | `MQ_DOCLING_ARTIFACTS_PATH` | – | Local Docling models for offline parsing |
 | `MQ_DOCLING_DO_OCR` | `false` | OCR (only for scanned PDFs) |
 | `MQ_PLAN_MIN_UNIT_CHARS` | `600` | Small sibling sections are merged into one unit |
-| `MQ_MAX_EXAMPLES_IN_PROMPT` | `5` | Few-shot examples per generation call |
+| `MQ_MAX_EXAMPLES_IN_PROMPT` | `5` | Upper bound of few-shot examples per generation call (3–5) |
+| `MQ_EXAMPLES_SELECTION` | `semantic` | `semantic` = examples closest to the section by embedding (only when the pool exceeds the bound, both registers guaranteed) \| `first` |
 | `MQ_VERIFY_JUDGE_ENABLED` | `true` | `false` = deterministic checks only |
 | `MQ_DEDUP_ENABLED` / `MQ_DEDUP_THRESHOLD` | `true` / `0.92` | Near-duplicate flagging |
 | `MQ_EXPORT_INCLUDE_FLAGGED` | `false` | Default for exports |
