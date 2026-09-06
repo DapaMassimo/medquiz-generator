@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import hashlib
 import re
 from collections.abc import Callable
 
@@ -145,7 +146,13 @@ class FakeTaxonomyBuilder:
 
 
 class FakeEmbeddings:
-    """Bag-of-words hashing embeddings: identical texts → identical vectors."""
+    """Bag-of-words hashing embeddings: identical texts → identical vectors.
+
+    Buckets come from blake2b, not ``hash()``: string hashing is salted per process, so
+    ``hash()`` keeps that promise only within a single run. Across runs the tokens land in
+    different buckets, the cosine ranking shifts, and any test asserting a specific order
+    fails for some values of PYTHONHASHSEED and passes for others.
+    """
 
     def __init__(self, dims: int = 64, tracker: UsageTracker | None = None) -> None:
         self._dims = dims
@@ -172,7 +179,8 @@ class FakeEmbeddings:
         for text in texts:
             vec = [0.0] * self._dims
             for token in re.findall(r"\w+", text.lower()):
-                vec[hash(token) % self._dims] += 1.0
+                digest = hashlib.blake2b(token.encode("utf-8"), digest_size=8).digest()
+                vec[int.from_bytes(digest, "big") % self._dims] += 1.0
             norm = sum(v * v for v in vec) ** 0.5 or 1.0
             vectors.append([v / norm for v in vec])
         return vectors
