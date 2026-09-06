@@ -3,9 +3,9 @@ from pypdf import PdfReader, PdfWriter
 
 # ── Configurazione ──────────────────────────────────────────
 INPUT_PDF = r"C:\Users\massi\Desktop\addlance - ssm\testo-completo.pdf"  # <-- cambia
-OUTPUT_PDF = r"capitolo1.pdf"
-PAGINA_DA = 63  # prima pagina da estrarre (numerazione FISICA del viewer, 1-based)
-PAGINA_A = 129  # ultima pagina da estrarre (inclusa)
+OUTPUT_PDF = r"capitolo3.pdf"
+PAGINA_DA = 208  # prima pagina da estrarre (numerazione FISICA del viewer, 1-based)
+PAGINA_A = 271  # ultima pagina da estrarre (inclusa)
 # ────────────────────────────────────────────────────────────
 
 reader = PdfReader(INPUT_PDF)
