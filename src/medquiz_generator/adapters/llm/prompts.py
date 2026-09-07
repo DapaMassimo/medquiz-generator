@@ -196,7 +196,7 @@ Rules:
 Return only the structured list of assignments."""
 
 
-def taxonomy_user_prompt(document: StructuredDocument, snippet_chars: int = 200) -> str:
+def taxonomy_user_prompt(document: StructuredDocument, snippet_chars: int = 1000) -> str:
     with_text = [s for s in document.sections if s.text.strip()]
     lines = [
         f"Document: {document.title} ({document.page_count} pages)",
