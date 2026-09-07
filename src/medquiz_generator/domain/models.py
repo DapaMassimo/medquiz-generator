@@ -284,6 +284,10 @@ class JudgeVerdict(BaseModel):
     answer_supported: bool = True
     single_correct: bool = True
     distractors_wrong: bool = True
+    option_status: dict[str, str] = Field(
+        default_factory=dict,
+        description="Per option id: supported | contradicted | not_in_passage, as judged.",
+    )
 
 
 class VerificationRecord(BaseModel):

@@ -86,16 +86,43 @@ class LangChainQuestionJudge:
         return self._llm.model_name
 
     def judge(self, item: QuizItem, passage: str) -> JudgeVerdict:
-        verdict = self._llm.invoke(
+        wire = self._llm.invoke(
             prompts.JUDGE_SYSTEM, prompts.judge_user_prompt(item, passage), prompts.WireVerdict
         )
-        return JudgeVerdict(
-            verdict=verdict.verdict,
-            reason=verdict.reason,
-            answer_supported=verdict.answer_supported,
-            single_correct=verdict.single_correct,
-            distractors_wrong=verdict.distractors_wrong,
+        return derive_verdict(wire, item.correct_option_id)
+
+
+def derive_verdict(wire: prompts.WireVerdict, marked: str) -> JudgeVerdict:
+    """Turn per-option assessments into the verdict; the model's own verdict can only make it
+    stricter (flag/discard), never lift a structural failure."""
+    status: dict[str, str] = {str(a.id): str(a.status) for a in wire.options}
+    supported = [oid for oid, st in status.items() if st == "supported"]
+    answer_supported = status.get(marked) == "supported"
+    single_correct = len(supported) <= 1
+    distractors_wrong = all(oid == marked for oid in supported)
+    verdict: str = wire.verdict
+    reason = wire.reason
+    if not answer_supported:
+        verdict = "discard"
+        reason = (
+            f"la risposta marcata {marked} non è sostenuta dal passaggio "
+            f"(stato: {status.get(marked, 'assente')}); {wire.reason}"
         )
+    elif not distractors_wrong:
+        others = ", ".join(o for o in supported if o != marked)
+        verdict = "discard"
+        reason = f"anche l'opzione {others} risulta sostenuta dal passaggio; {wire.reason}"
+    elif verdict == "pass" and len(status) < 5:
+        verdict = "flag"
+        reason = f"valutazione incompleta delle opzioni ({len(status)}/5); {wire.reason}"
+    return JudgeVerdict(
+        verdict=verdict,  # type: ignore[arg-type]
+        reason=reason,
+        answer_supported=answer_supported,
+        single_correct=single_correct,
+        distractors_wrong=distractors_wrong,
+        option_status=status,
+    )
 
 
 class LangChainTaxonomyBuilder:

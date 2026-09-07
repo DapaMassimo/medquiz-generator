@@ -48,12 +48,29 @@ class WireBatch(BaseModel):
     questions: list[WireQuestion]
 
 
-class WireVerdict(BaseModel):
-    answer_supported: bool = Field(
-        description="The indicated correct option is explicitly supported by the passage"
+OptionStatusWire = Literal["supported", "contradicted", "not_in_passage"]
+
+
+class WireOptionAssessment(BaseModel):
+    id: OptionIdWire
+    status: OptionStatusWire = Field(
+        description="supported = the passage states this option answers the question; "
+        "contradicted = the passage states otherwise; not_in_passage = the passage says nothing"
     )
-    single_correct: bool = Field(description="Exactly one option is correct given the passage")
-    distractors_wrong: bool = Field(description="Every other option is clearly wrong")
+    evidence: str = Field(
+        description="The words of the passage (or the numbers compared) that justify the status, "
+        "in Italian; empty when not_in_passage"
+    )
+
+
+class WireVerdict(BaseModel):
+    passage_answer: str = Field(
+        description="What the passage itself says about the question, in one sentence in Italian, "
+        "before looking at the options"
+    )
+    options: list[WireOptionAssessment] = Field(
+        description="One assessment for every option, A to E, in order"
+    )
     verdict: Literal["pass", "discard", "flag"]
     reason: str = Field(description="Short justification in Italian")
 
@@ -150,28 +167,34 @@ the ONLY source you are given: a passage from a medical textbook. You did not wr
 question and you must not rely on outside medical knowledge — if a claim is not in the passage
 it is unsupported.
 
-Decide:
-- answer_supported: the option marked as correct is explicitly supported by the passage.
-- single_correct: no other option could also be considered correct given the passage.
-- distractors_wrong: every other option is clearly wrong or unsupported by the passage.
-
-Verdict policy:
-- "discard" when the marked answer is not supported, when another option is also correct, or
-  when the question contradicts the passage.
-- "flag" when support is only partial or the wording is ambiguous, when a distractor is
-  borderline, or when the passage is too short to be sure — a human must review it.
-- "pass" only when all three checks are true beyond doubt.
-Write the reason in Italian, one or two sentences."""
+Work in this order:
+1. passage_answer: state what the passage says about the question, ignoring the options. When
+   the passage contains numbers, ranges, thresholds or a table, compare the values in the
+   question against them explicitly (e.g. "150/95 falls in the 140-159/90-99 row").
+2. options: assess EVERY option A-E against the passage, one by one, quoting the evidence:
+   "supported" only if the passage states that this option answers the question;
+   "contradicted" if the passage states otherwise; "not_in_passage" if it says nothing.
+   Judge each option by its TEXT, not by its letter; the marked answer is given as letter and
+   text so you can check they correspond.
+3. verdict:
+   - "discard" when the marked option is not "supported", when a second option is also
+     "supported", or when the question contradicts the passage;
+   - "flag" when support is only partial, the wording is ambiguous, a distractor is borderline,
+     or the passage is too short to be sure — a human must review it;
+   - "pass" only when the marked option is supported beyond doubt and no other option is.
+Write the reason in Italian, one or two sentences, consistent with the option assessments."""
 
 
 def judge_user_prompt(item: QuizItem, passage: str) -> str:
     options = "\n".join(f"{o.id}: {o.text}" for o in item.options)
+    correct = item.correct_option
+    marked = correct.text if correct is not None else "(opzione non trovata)"
     return (
         f"### Passage (source of truth)\n{passage}\n\n"
         f"### Cited quote\n{item.source.quote}\n\n"
         f"### Question\n{item.question}\n\n"
         f"### Options\n{options}\n\n"
-        f"### Marked correct option\n{item.correct_option_id}\n\n"
+        f"### Marked correct option\n{item.correct_option_id}: {marked}\n\n"
         "Evaluate and return the structured verdict."
     )
 

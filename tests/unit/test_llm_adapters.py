@@ -52,6 +52,29 @@ class FakeChatModel:
         return self.runnable
 
 
+def wire_verdict(
+    verdict: str, reason: str, status: dict[str, str] | None = None
+) -> prompts.WireVerdict:
+    """Assessments where A is supported and the others are not, unless overridden."""
+    base = {
+        "A": "supported",
+        "B": "contradicted",
+        "C": "not_in_passage",
+        "D": "contradicted",
+        "E": "not_in_passage",
+    }
+    base.update(status or {})
+    return prompts.WireVerdict(
+        passage_answer="il passaggio dice X",
+        options=[
+            prompts.WireOptionAssessment(id=oid, status=st, evidence="…")  # type: ignore[arg-type]
+            for oid, st in base.items()
+        ],
+        verdict=verdict,  # type: ignore[arg-type]
+        reason=reason,
+    )
+
+
 def structured(responses: list[Any], tracker: InMemoryUsageTracker | None = None) -> StructuredLLM:
     model = FakeChatModel(responses)
     return StructuredLLM(model, model_name="fake", tracker=tracker, max_attempts=2, backoff_s=0)  # type: ignore[arg-type]
@@ -60,13 +83,7 @@ def structured(responses: list[Any], tracker: InMemoryUsageTracker | None = None
 def test_structured_llm_records_usage_and_returns_parsed() -> None:
     tracker = InMemoryUsageTracker("r")
     tracker.set_stage("verify")
-    verdict = prompts.WireVerdict(
-        answer_supported=True,
-        single_correct=True,
-        distractors_wrong=True,
-        verdict="pass",
-        reason="ok",
-    )
+    verdict = wire_verdict("pass", "ok")
     llm = structured([{"raw": FakeAIMessage(), "parsed": verdict, "parsing_error": None}], tracker)
     result = llm.invoke("sys", "user", prompts.WireVerdict)
     assert result.verdict == "pass"
@@ -87,13 +104,7 @@ def test_structured_llm_retries_then_fails() -> None:
 
 
 def test_structured_llm_retries_then_succeeds() -> None:
-    verdict = prompts.WireVerdict(
-        answer_supported=True,
-        single_correct=True,
-        distractors_wrong=True,
-        verdict="flag",
-        reason="x",
-    )
+    verdict = wire_verdict("flag", "x")
     llm = structured(
         [RuntimeError("boom"), {"raw": FakeAIMessage(), "parsed": verdict, "parsing_error": None}]
     )
@@ -150,18 +161,13 @@ def test_generator_adapter_maps_wire_batch(fixture_document: StructuredDocument)
 
 
 def test_judge_and_style_and_taxonomy_adapters(fixture_document: StructuredDocument) -> None:
-    verdict = prompts.WireVerdict(
-        answer_supported=False,
-        single_correct=True,
-        distractors_wrong=True,
-        verdict="discard",
-        reason="no",
-    )
+    verdict = wire_verdict("discard", "no", {"A": "contradicted"})
     judge = LangChainQuestionJudge(
         structured([{"raw": FakeAIMessage(), "parsed": verdict, "parsing_error": None}])
     )
     result = judge.judge(good_item(), "passaggio")
     assert result.verdict == "discard" and result.answer_supported is False
+    assert result.option_status["A"] == "contradicted"
 
     scores = prompts.WireStyleScores(
         ssm_style=5, distractor_quality=4, explanation_clarity=3, groundedness=5, rationale="bene"
@@ -222,3 +228,33 @@ def test_langchain_embeddings_tracks_usage() -> None:
 
 def test_count_tokens_falls_back_for_unknown_model() -> None:
     assert count_tokens(["a" * 40], "unknown-model-xyz") == 10
+
+
+def test_derive_verdict_overrides_a_lenient_model() -> None:
+    from medquiz_generator.adapters.llm.adapters import derive_verdict
+
+    # Model says pass but the marked option is contradicted by the passage → discard.
+    lenient = wire_verdict("pass", "sembra ok", {"A": "contradicted"})
+    result = derive_verdict(lenient, "A")
+    assert result.verdict == "discard" and "non è sostenuta" in result.reason
+    # Two options supported → discard even if the model passed it.
+    two = wire_verdict("pass", "ok", {"C": "supported"})
+    result = derive_verdict(two, "A")
+    assert result.verdict == "discard" and "opzione C" in result.reason
+    assert result.single_correct is False and result.distractors_wrong is False
+    # Clean case keeps the model verdict (pass or flag).
+    assert derive_verdict(wire_verdict("pass", "ok"), "A").verdict == "pass"
+    assert derive_verdict(wire_verdict("flag", "dubbio"), "A").verdict == "flag"
+    # Incomplete assessment cannot pass.
+    partial = prompts.WireVerdict(
+        passage_answer="x",
+        options=[prompts.WireOptionAssessment(id="A", status="supported", evidence="e")],
+        verdict="pass",
+        reason="ok",
+    )
+    assert derive_verdict(partial, "A").verdict == "flag"
+
+
+def test_judge_prompt_shows_marked_option_text() -> None:
+    text = prompts.judge_user_prompt(good_item(), "passaggio")
+    assert "### Marked correct option\nA: Monitoraggio pressorio delle 24 ore" in text
