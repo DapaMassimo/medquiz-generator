@@ -111,6 +111,17 @@ def test_structured_llm_retries_then_succeeds() -> None:
     assert llm.invoke("s", "u", prompts.WireVerdict).verdict == "flag"
 
 
+def test_build_chat_model_omits_temperature_for_reasoning_models() -> None:
+    from medquiz_generator.adapters.llm.langchain_llm import is_reasoning_model
+
+    assert is_reasoning_model("gpt-5-mini") and is_reasoning_model("o4-mini")
+    assert not is_reasoning_model("gpt-4.1") and not is_reasoning_model("gpt-4o-mini")
+    classic = build_chat_model("openai", "gpt-4.1", temperature=0.1, api_key="sk-test")
+    assert classic.temperature == 0.1  # type: ignore[attr-defined]
+    reasoning = build_chat_model("openai", "gpt-5-mini", temperature=0.1, api_key="sk-test")
+    assert reasoning.temperature is None  # type: ignore[attr-defined]
+
+
 def test_build_chat_model_rejects_unknown_provider() -> None:
     with pytest.raises(LLMError):
         build_chat_model("nope", "m", temperature=0.0, api_key="")

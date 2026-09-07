@@ -8,6 +8,7 @@ retry policy, token accounting and cost attribution for free.
 from __future__ import annotations
 
 import logging
+import re
 import time
 from typing import Any, TypeVar
 
@@ -23,17 +24,29 @@ M = TypeVar("M", bound=BaseModel)
 log = logging.getLogger(__name__)
 
 
+# OpenAI reasoning models (o-series, gpt-5 family) reject any temperature other than the
+# default; the sampling temperature is therefore only sent to non-reasoning models.
+_OPENAI_REASONING = re.compile(r"^(o\d|gpt-5)")
+
+
+def is_reasoning_model(model: str) -> bool:
+    return bool(_OPENAI_REASONING.match(model))
+
+
 def build_chat_model(
     provider: str, model: str, *, temperature: float, api_key: str, max_retries: int = 2
 ) -> BaseChatModel:
     if provider == "openai":
         from langchain_openai import ChatOpenAI
 
+        kwargs: dict[str, Any] = {}
+        if not is_reasoning_model(model):
+            kwargs["temperature"] = temperature
         return ChatOpenAI(
             model=model,
-            temperature=temperature,
             api_key=api_key or None,  # type: ignore[arg-type]
             max_retries=max_retries,
+            **kwargs,
         )
     if provider == "anthropic":
         from langchain_anthropic import ChatAnthropic
