@@ -58,18 +58,16 @@ class WireVerdict(BaseModel):
     reason: str = Field(description="Short justification in Italian")
 
 
-class WireTopic(BaseModel):
-    name: str
-    section_ids: list[str]
-
-
-class WireSubject(BaseModel):
-    name: str
-    topics: list[WireTopic]
+class WireAssignment(BaseModel):
+    section_id: str = Field(description="Section id exactly as given in the outline")
+    subject: str = Field(description="Materia, in italiano, breve e normalizzata")
+    topic: str = Field(description="Argomento, in italiano, specifico e riusato per sezioni affini")
 
 
 class WireTaxonomy(BaseModel):
-    subjects: list[WireSubject]
+    assignments: list[WireAssignment] = Field(
+        description="Exactly one entry per section id of the outline, in outline order"
+    )
 
 
 class WireStyleScores(BaseModel):
@@ -185,19 +183,28 @@ normalised: merge sections that clearly belong to the same subject even if their
 and reuse the same topic name for sections about the same argument.
 
 Rules:
-- Every section id in the outline must appear in exactly one topic.
+- Return ONE assignment per section id, in outline order: no id omitted, no id repeated. The
+  outline states how many sections there are; return exactly that many assignments.
 - Do not invent subjects that the outline does not support; derive them from the headings and
-  the text snippets.
-- Keep the number of subjects small (typically 1-8 for a single volume) and topics specific
-  (one topic may group several consecutive sections).
-Return only the structured taxonomy."""
+  the text snippets. Do not use the chapter title itself as a subject when the medical
+  discipline is evident from the content.
+- Keep the number of subjects small (typically 1-8 for a single volume) and topics specific:
+  a topic usually groups several consecutive sections about the same argument.
+- Generic headings such as "Diagnosi", "Terapia", "Storia naturale", "Esame obiettivo" must be
+  resolved into the argument they belong to, using the neighbouring sections and the snippets
+  (e.g. the "Diagnosi" section that follows "Danno renale" belongs to the topic "Danno renale").
+Return only the structured list of assignments."""
 
 
 def taxonomy_user_prompt(document: StructuredDocument, snippet_chars: int = 200) -> str:
-    lines = [f"Document: {document.title} ({document.page_count} pages)", "", "### Outline"]
-    for section in document.sections:
-        if not section.text.strip():
-            continue
+    with_text = [s for s in document.sections if s.text.strip()]
+    lines = [
+        f"Document: {document.title} ({document.page_count} pages)",
+        f"Sections to assign: {len(with_text)} (return exactly {len(with_text)} assignments)",
+        "",
+        "### Outline",
+    ]
+    for section in with_text:
         indent = "  " * max(0, section.level - 1)
         snippet = " ".join(section.text.split())[:snippet_chars]
         lines.append(

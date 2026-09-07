@@ -44,35 +44,45 @@ def structural_taxonomy(document: StructuredDocument, run_id: str) -> Taxonomy:
 
 
 def ensure_complete(taxonomy: Taxonomy, document: StructuredDocument) -> tuple[Taxonomy, int]:
-    """Map any section the builder left out using the structural fallback.
+    """Make the taxonomy a partition of the document's sections.
 
+    * ids unknown to the document are dropped;
+    * a section listed under several topics keeps only its first occurrence (``label_for``
+      already resolves to the first, so the file now says what the code does);
+    * sections the builder left out are filled with the structural fallback (topic = section
+      title) under the taxonomy's only subject when there is exactly one, otherwise under the
+      chapter title.
     Returns the completed taxonomy and the number of sections that were filled in.
     """
     valid_ids = {s.id for s in document.sections}
-    subjects = [
-        TaxonomySubject(
-            name=subject.name,
-            topics=[
-                TaxonomyTopic(
-                    name=topic.name,
-                    section_ids=[sid for sid in topic.section_ids if sid in valid_ids],
-                )
-                for topic in subject.topics
-            ],
-        )
-        for subject in taxonomy.subjects
-    ]
+    seen: set[str] = set()
+    subjects: list[TaxonomySubject] = []
+    for subject in taxonomy.subjects:
+        topics: list[TaxonomyTopic] = []
+        for topic in subject.topics:
+            kept: list[str] = []
+            for sid in topic.section_ids:
+                if sid in valid_ids and sid not in seen:
+                    seen.add(sid)
+                    kept.append(sid)
+            topics.append(TaxonomyTopic(name=topic.name, section_ids=kept))
+        subjects.append(TaxonomySubject(name=subject.name, topics=topics))
     completed = taxonomy.model_copy(update={"subjects": subjects})
     filled = 0
     for section in document.sections:
-        if not section.text.strip() or completed.label_for(section.id) is not None:
+        if not section.text.strip() or section.id in seen:
             continue
-        chapter = chapter_of(section, document)
-        subject = next((s for s in completed.subjects if s.name == chapter), None)
-        if subject is None:
-            subject = TaxonomySubject(name=chapter)
-            completed.subjects.append(subject)
-        subject.topics.append(TaxonomyTopic(name=section.title, section_ids=[section.id]))
+        if len(completed.subjects) == 1:
+            target = completed.subjects[0]
+        else:
+            chapter = chapter_of(section, document)
+            found = next((s for s in completed.subjects if s.name == chapter), None)
+            if found is None:
+                found = TaxonomySubject(name=chapter)
+                completed.subjects.append(found)
+            target = found
+        target.topics.append(TaxonomyTopic(name=section.title, section_ids=[section.id]))
+        seen.add(section.id)
         filled += 1
     completed.subjects = [
         s.model_copy(update={"topics": [t for t in s.topics if t.section_ids]})

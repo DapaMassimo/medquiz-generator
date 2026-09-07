@@ -102,17 +102,26 @@ class LangChainTaxonomyBuilder:
         wire = self._llm.invoke(
             prompts.TAXONOMY_SYSTEM, prompts.taxonomy_user_prompt(document), prompts.WireTaxonomy
         )
-        subjects = [
-            TaxonomySubject(
-                name=s.name.strip(),
-                topics=[
-                    TaxonomyTopic(name=t.name.strip(), section_ids=list(t.section_ids))
-                    for t in s.topics
-                ],
-            )
-            for s in wire.subjects
-        ]
-        return Taxonomy(run_id=run_id, document_hash=document.content_hash, subjects=subjects)
+        # Group per-section assignments into subjects → topics, preserving first-appearance
+        # order; a section id assigned twice keeps its first assignment.
+        subjects: dict[str, TaxonomySubject] = {}
+        seen: set[str] = set()
+        for a in wire.assignments:
+            section_id = a.section_id.strip()
+            if not section_id or section_id in seen:
+                continue
+            seen.add(section_id)
+            subject_name = a.subject.strip() or "Senza materia"
+            topic_name = a.topic.strip() or "Senza argomento"
+            subject = subjects.setdefault(subject_name, TaxonomySubject(name=subject_name))
+            topic = next((t for t in subject.topics if t.name == topic_name), None)
+            if topic is None:
+                topic = TaxonomyTopic(name=topic_name)
+                subject.topics.append(topic)
+            topic.section_ids.append(section_id)
+        return Taxonomy(
+            run_id=run_id, document_hash=document.content_hash, subjects=list(subjects.values())
+        )
 
 
 class LangChainStyleJudge:

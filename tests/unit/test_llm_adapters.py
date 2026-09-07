@@ -168,20 +168,26 @@ def test_judge_and_style_and_taxonomy_adapters(fixture_document: StructuredDocum
     assert style.score(good_item(), [], [good_item("g")]).mean == 4.25
 
     wire_taxonomy = prompts.WireTaxonomy(
-        subjects=[
-            prompts.WireSubject(
-                name=" Cardiologia ",
-                topics=[prompts.WireTopic(name="Ipertensione", section_ids=["s001", "s002"])],
-            )
+        assignments=[
+            prompts.WireAssignment(
+                section_id="s001", subject=" Cardiologia ", topic="Ipertensione"
+            ),
+            prompts.WireAssignment(section_id="s002", subject="Cardiologia", topic="Ipertensione"),
+            prompts.WireAssignment(section_id="s002", subject="Nefrologia", topic="Duplicato"),
+            prompts.WireAssignment(section_id="s003", subject="Cardiologia", topic="Diagnosi"),
         ]
     )
     builder = LangChainTaxonomyBuilder(
         structured([{"raw": FakeAIMessage(), "parsed": wire_taxonomy, "parsing_error": None}])
     )
     taxonomy = builder.build(fixture_document, "r")
-    assert taxonomy.subjects[0].name == "Cardiologia"
-    assert taxonomy.label_for("s002") is not None
-    assert "id=s002" in prompts.taxonomy_user_prompt(fixture_document)
+    assert [s.name for s in taxonomy.subjects] == ["Cardiologia"]  # duplicate id ignored
+    assert [t.name for t in taxonomy.subjects[0].topics] == ["Ipertensione", "Diagnosi"]
+    label = taxonomy.label_for("s002")
+    assert label is not None and label.topic == "Ipertensione"
+    assert taxonomy.section_count == 3
+    prompt = prompts.taxonomy_user_prompt(fixture_document)
+    assert "id=s002" in prompt and "return exactly 10 assignments" in prompt
 
 
 class FakeEmbeddingsBackend:
