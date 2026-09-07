@@ -121,7 +121,8 @@ Hard rules — violating any of them makes the question unusable:
    that supports the correct answer. Do not paraphrase, do not merge distant sentences.
 6. `page`: the page number of the quote, within the page range given for the section.
 7. `explanation`: 2-4 sentences in Italian explaining why the correct option is right and,
-   briefly, why the main distractor is wrong — again only with facts from the text.
+   briefly, why the main distractor is wrong — again only with facts from the text. Refer to
+   options by their content, never by their letter (the options will be reordered).
 8. Cover different parts of the section: do not ask twice about the same sentence.
 9. Estimate `difficulty` as facile / media / difficile.
 
@@ -214,7 +215,9 @@ Rules:
   the text snippets. Do not use the chapter title itself as a subject when the medical
   discipline is evident from the content.
 - Keep the number of subjects small (typically 1-8 for a single volume) and topics specific:
-  a topic usually groups several consecutive sections about the same argument.
+  a topic usually groups several consecutive sections about the same argument, and should not
+  exceed roughly 15 sections; a chapter with more than 100 sections needs at least 8-10 topics.
+  Do not collapse the whole document into one topic.
 - Generic headings such as "Diagnosi", "Terapia", "Storia naturale", "Esame obiettivo" must be
   resolved into the argument they belong to, using the neighbouring sections and the snippets
   (e.g. the "Diagnosi" section that follows "Danno renale" belongs to the topic "Danno renale").

@@ -5,12 +5,17 @@ import pytest
 from medquiz_generator.application import artifacts
 from medquiz_generator.application.classify import ClassifyStage
 from medquiz_generator.application.context import RunContext
-from medquiz_generator.application.generate import GenerateStage, pick_source_section
+from medquiz_generator.application.generate import (
+    GenerateStage,
+    pick_source_section,
+    shuffle_options,
+)
 from medquiz_generator.application.plan import PlanStage
 from medquiz_generator.domain.errors import StageInputMissingError
 from medquiz_generator.domain.models import (
     GeneratedQuestion,
     GenerationPlan,
+    Option,
     QuizItem,
     StructuredDocument,
     UsageRecord,
@@ -65,6 +70,35 @@ def test_generate_is_resumable_per_unit(
     assert len(resumed) == plan.planned_questions
     # The first unit was not generated twice.
     assert [c[0] for c in generator.calls].count(first_unit) == 1
+
+
+def test_shuffle_options_is_deterministic_and_remaps_letters() -> None:
+    question = GeneratedQuestion(
+        question="q",
+        options=[Option(id=oid, text=f"testo {oid}") for oid in ("A", "B", "C", "D", "E")],  # type: ignore[arg-type]
+        correct_option_id="A",
+        explanation="La risposta A è corretta; l'opzione B è errata e le alternative C e D pure.",
+        difficulty="media",
+        quote="x",
+    )
+    first = shuffle_options(question, seed="run:u001-q01")
+    again = shuffle_options(question, seed="run:u001-q01")
+    assert first == again  # same seed → same order
+    assert [o.id for o in first.options] == ["A", "B", "C", "D", "E"]
+    assert sorted(o.text for o in first.options) == sorted(o.text for o in question.options)
+    # The correct option follows its text.
+    correct = next(o for o in first.options if o.id == first.correct_option_id)
+    assert correct.text == "testo A"
+    # Letter references in the explanation follow the reordering too.
+    new_of = {o.text[-1]: o.id for o in first.options}
+    assert f"risposta {new_of['A']}" in first.explanation
+    assert f"opzione {new_of['B']}" in first.explanation
+    # Different seeds spread the correct answer over the letters.
+    letters = {shuffle_options(question, seed=f"s{i}").correct_option_id for i in range(40)}
+    assert len(letters) == 5
+    # Malformed option lists are left untouched.
+    short = question.model_copy(update={"options": question.options[:3]})
+    assert shuffle_options(short, seed="s") == short
 
 
 def test_pick_source_section_prefers_quote_then_page(

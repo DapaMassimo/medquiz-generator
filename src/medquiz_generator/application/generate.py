@@ -6,12 +6,17 @@ is re-saved after every unit, so an interrupted run resumes where it stopped.
 
 from __future__ import annotations
 
+import random
+import re
+
 from medquiz_generator.application import artifacts
 from medquiz_generator.application.context import RunContext
 from medquiz_generator.domain.models import (
+    OPTION_IDS,
     GeneratedQuestion,
     GenerationPlan,
     ModelMetadata,
+    Option,
     PlanUnit,
     QuizItem,
     Section,
@@ -38,6 +43,40 @@ def pick_source_section(question: GeneratedQuestion, sections: list[Section]) ->
     return sections[0]
 
 
+_LETTER_REF = re.compile(
+    r"\b(risposta|risposte|opzione|opzioni|alternativa|alternative|lettera|la|le)\s+([A-E])\b"
+)
+
+
+def shuffle_options(question: GeneratedQuestion, seed: str) -> GeneratedQuestion:
+    """Deterministically reorder the options and relabel them A-E.
+
+    Models tend to put the correct answer in the same slot (gpt-4.1 wrote 22/30 answers as A);
+    reordering in code removes the bias regardless of the model. Letter references in the
+    explanation ("la risposta B è errata") are remapped to the new letters.
+    """
+    if len(question.options) != len(OPTION_IDS):
+        return question
+    order = list(range(len(question.options)))
+    random.Random(seed).shuffle(order)
+    old_to_new: dict[str, str] = {
+        str(question.options[old].id): OPTION_IDS[new] for new, old in enumerate(order)
+    }
+    options = [
+        Option(id=OPTION_IDS[new], text=question.options[old].text) for new, old in enumerate(order)
+    ]
+    explanation = _LETTER_REF.sub(
+        lambda m: f"{m.group(1)} {old_to_new.get(m.group(2), m.group(2))}", question.explanation
+    )
+    return question.model_copy(
+        update={
+            "options": options,
+            "correct_option_id": old_to_new[question.correct_option_id],
+            "explanation": explanation,
+        }
+    )
+
+
 def to_quiz_item(
     question: GeneratedQuestion,
     *,
@@ -49,6 +88,7 @@ def to_quiz_item(
     run_id: str,
 ) -> QuizItem:
     section = pick_source_section(question, sections)
+    question = shuffle_options(question, seed=f"{run_id}:{item_id}")
     return QuizItem(
         id=item_id,
         materia=label.subject if label else "",
