@@ -23,6 +23,10 @@ from medquiz_generator.domain.models import (
 
 # Sections shorter than this are pure headings / noise and are never planned on their own.
 NOISE_CHARS = 120
+# Bounds for the automatic merge threshold: never merge below the floor (units would be too
+# thin to write a question on) and never above the cap (~2k tokens of source per call).
+AUTO_MIN_UNIT_CHARS_FLOOR = 600
+AUTO_MIN_UNIT_CHARS_CAP = 8000
 # Sections that are not teaching content (bibliographies, indexes…) are never planned.
 NON_CONTENT_TITLE = re.compile(
     r"^\s*(bibliografia|riferimenti bibliografici|references|letture consigliate|indice"
@@ -102,15 +106,49 @@ def allocate(total: int, weights: list[float], minimum: int = 1) -> list[int]:
     return result
 
 
+def _substantial_groups(sections: list[Section], min_unit_chars: int) -> list[_Group]:
+    return [g for g in _group_sections(sections, min_unit_chars) if g.chars >= NOISE_CHARS]
+
+
+def choose_min_unit_chars(
+    document: StructuredDocument,
+    total_questions: int,
+    *,
+    floor: int = AUTO_MIN_UNIT_CHARS_FLOOR,
+    cap: int = AUTO_MIN_UNIT_CHARS_CAP,
+) -> int:
+    """Pick the merge threshold so that every unit can receive at least one question.
+
+    Walks a geometric grid of thresholds from ``floor`` to ``cap`` and returns the smallest one
+    whose unit count does not exceed ``total_questions`` (finer units are better as long as
+    none is left without budget). If even ``cap`` yields more units than questions, ``cap`` is
+    returned and some units will get zero: the document is simply larger than the budget.
+    """
+    candidates: list[int] = []
+    value = float(floor)
+    while value < cap:
+        candidates.append(round(value))
+        value *= 1.25
+    candidates.append(cap)
+    for threshold in candidates:
+        if len(_substantial_groups(document.sections, threshold)) <= total_questions:
+            return threshold
+    return cap
+
+
 def build_plan(
     document: StructuredDocument,
     run_id: str,
     total_questions: int,
     *,
-    min_unit_chars: int = 600,
+    min_unit_chars: int | None = None,
 ) -> GenerationPlan:
+    """``min_unit_chars=None`` selects the threshold automatically (see choose_min_unit_chars)."""
     if total_questions < 1:
         raise PlanningError("total_questions must be >= 1 (it is a mandatory run parameter).")
+    auto = min_unit_chars is None
+    if min_unit_chars is None:
+        min_unit_chars = choose_min_unit_chars(document, total_questions)
     groups = _group_sections(document.sections, min_unit_chars)
     substantial = [g for g in groups if g.chars >= NOISE_CHARS]
     skipped = [s.id for g in groups if g.chars < NOISE_CHARS for s in g.sections]
@@ -155,27 +193,33 @@ def build_plan(
         document_hash=document.content_hash,
         total_questions=total_questions,
         min_unit_chars=min_unit_chars,
+        min_unit_chars_auto=auto,
         units=units,
         skipped_section_ids=skipped,
     )
 
 
 class PlanStage:
-    def __init__(self, min_unit_chars: int = 600) -> None:
+    def __init__(self, min_unit_chars: int | None = None) -> None:
+        """``None`` = choose the merge threshold automatically from the question budget."""
         self._min_unit_chars = min_unit_chars
 
-    def run(self, ctx: RunContext, total_questions: int) -> GenerationPlan:
+    def run(
+        self, ctx: RunContext, total_questions: int, *, min_unit_chars: int | None = None
+    ) -> GenerationPlan:
         with ctx.stage(Stage.PLAN):
             document = ctx.require(artifacts.DOCUMENT, StructuredDocument)
-            plan = build_plan(
-                document, ctx.run_id, total_questions, min_unit_chars=self._min_unit_chars
-            )
+            threshold = min_unit_chars if min_unit_chars is not None else self._min_unit_chars
+            plan = build_plan(document, ctx.run_id, total_questions, min_unit_chars=threshold)
             ctx.store.save(ctx.run_id, artifacts.PLAN, plan)
             ctx.update_meta(total_questions=total_questions)
             ctx.log(
                 "plan built",
                 units=len(plan.units),
                 planned=plan.planned_questions,
+                zero_budget_units=sum(1 for u in plan.units if u.questions == 0),
+                min_unit_chars=plan.min_unit_chars,
+                auto=plan.min_unit_chars_auto,
                 skipped_sections=len(plan.skipped_section_ids),
             )
         return plan

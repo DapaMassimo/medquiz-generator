@@ -45,10 +45,11 @@ class Pipeline:
         *,
         use_cache: bool = True,
         include_flagged: bool | None = None,
+        min_unit_chars: int | None = None,
     ) -> RunReport:
         stages = self._stages
         stages.parse.run(ctx, pdf_path, use_cache=use_cache)
-        stages.plan.run(ctx, total_questions)
+        stages.plan.run(ctx, total_questions, min_unit_chars=min_unit_chars)
         stages.classify.run(ctx)
         stages.report.run(ctx)
         stages.generate.run(ctx)

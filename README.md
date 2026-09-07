@@ -160,7 +160,7 @@ Discarded questions never reach an export; flagged ones only with `--include-fla
 | `MQ_DOCLING_CACHE_DIR` | `.cache/docling` | Parsed documents cached by content hash |
 | `MQ_DOCLING_ARTIFACTS_PATH` | – | Local Docling models for offline parsing |
 | `MQ_DOCLING_DO_OCR` | `false` | OCR (only for scanned PDFs) |
-| `MQ_PLAN_MIN_UNIT_CHARS` | `600` | Small sibling sections are merged into one unit |
+| `MQ_PLAN_MIN_UNIT_CHARS` | `auto` | Merge threshold for small sibling sections; `auto` picks the smallest threshold (600–8000 chars) at which every unit can get at least one question; `--min-unit-chars` overrides per run |
 | `MQ_MAX_EXAMPLES_IN_PROMPT` | `5` | Upper bound of few-shot examples per generation call (3–5) |
 | `MQ_EXAMPLES_SELECTION` | `random` | `random` = k drawn from the whole pool, seeded by the section so re-runs reproduce \| `first` = the first k, same for every unit \| `semantic` = closest by embedding (off until the pool is large enough that most slots find real neighbours) |
 | `MQ_EXAMPLES_MIN_SIMILARITY` | `0.3` | Cosine below which a semantic match is not convincing; missing slots fall back to the first examples of the file |

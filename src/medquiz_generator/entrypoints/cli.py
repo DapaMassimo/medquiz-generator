@@ -44,6 +44,15 @@ TotalOption = Annotated[
     ),
 ]
 
+MinUnitOption = Annotated[
+    int | None,
+    typer.Option(
+        "--min-unit-chars",
+        min=100,
+        help="Merge threshold for small sections (default: MQ_PLAN_MIN_UNIT_CHARS, auto).",
+    ),
+]
+
 _state: dict[str, Container] = {}
 
 
@@ -101,13 +110,17 @@ def parse(
 
 
 @app.command()
-def plan(total_questions: TotalOption, run_id: RunIdOption = None) -> None:
+def plan(
+    total_questions: TotalOption,
+    run_id: RunIdOption = None,
+    min_unit_chars: MinUnitOption = None,
+) -> None:
     """Stage 2: allocate the requested total across sections (plan.json, hand-editable)."""
     c = container()
     ctx = c.context(resolve_run_id(run_id))
 
     def go() -> None:
-        result = c.plan_stage().run(ctx, total_questions)
+        result = c.plan_stage().run(ctx, total_questions, min_unit_chars=min_unit_chars)
         typer.echo(render_plan(result))
 
     _guard(go)
@@ -238,6 +251,7 @@ def run(
     total_questions: TotalOption,
     no_cache: Annotated[bool, typer.Option("--no-cache")] = False,
     include_flagged: Annotated[bool | None, typer.Option("--include-flagged/--no-flagged")] = None,
+    min_unit_chars: MinUnitOption = None,
 ) -> None:
     """Full pipeline: parse → plan → classify → generate → verify → dedup → export → report."""
     c = container()
@@ -246,7 +260,12 @@ def run(
 
     def go() -> None:
         result = c.pipeline(ctx).run(
-            ctx, pdf, total_questions, use_cache=not no_cache, include_flagged=include_flagged
+            ctx,
+            pdf,
+            total_questions,
+            use_cache=not no_cache,
+            include_flagged=include_flagged,
+            min_unit_chars=min_unit_chars,
         )
         typer.echo(render_report(result))
         typer.echo(f"Artefacts: {c.store.run_dir(rid)}")

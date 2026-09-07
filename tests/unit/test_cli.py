@@ -34,9 +34,9 @@ def test_cli_stage_by_stage(tmp_path: Path, fake_cli: FakeContainer) -> None:
     result = runner.invoke(cli.app, ["plan"])
     assert result.exit_code != 0  # --total-questions is mandatory
 
-    result = runner.invoke(cli.app, ["plan", "--total-questions", "10"])
+    result = runner.invoke(cli.app, ["plan", "--total-questions", "10", "--min-unit-chars", "400"])
     assert result.exit_code == 0, result.output
-    assert "10/10 questions" in result.output
+    assert "10/10 questions" in result.output and "400 chars (fixed)" in result.output
 
     result = runner.invoke(cli.app, ["generate"])  # runs classify implicitly
     assert result.exit_code == 0, result.output

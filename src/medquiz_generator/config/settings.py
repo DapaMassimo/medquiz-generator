@@ -60,7 +60,9 @@ class Settings(BaseSettings):
     use_cache: bool = True
 
     # Pipeline knobs
-    plan_min_unit_chars: int = 600
+    # Merge threshold for small sibling sections: an integer, or "auto" to derive it from the
+    # question budget so that every unit can get at least one question.
+    plan_min_unit_chars: int | Literal["auto"] = "auto"
     # Few-shot examples per generation call: an upper bound, between 3 and 5.
     max_examples_in_prompt: int = Field(default=5, ge=3, le=5)
     # 'random' = k drawn from the whole pool, seeded by the section so re-runs reproduce;

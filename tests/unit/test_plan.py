@@ -4,7 +4,14 @@ import pytest
 
 from medquiz_generator.application import artifacts
 from medquiz_generator.application.context import RunContext
-from medquiz_generator.application.plan import PlanStage, allocate, build_plan
+from medquiz_generator.application.plan import (
+    AUTO_MIN_UNIT_CHARS_CAP,
+    AUTO_MIN_UNIT_CHARS_FLOOR,
+    PlanStage,
+    allocate,
+    build_plan,
+    choose_min_unit_chars,
+)
 from medquiz_generator.domain.errors import PlanningError, StageInputMissingError
 from medquiz_generator.domain.models import GenerationPlan, StageTiming, StructuredDocument
 
@@ -72,6 +79,39 @@ def test_build_plan_skips_bibliography_even_when_long(
     plan = build_plan(document, "r1", 10, min_unit_chars=400)
     assert "s009" in plan.skipped_section_ids
     assert all("s009" not in unit.section_ids for unit in plan.units)
+
+
+def test_choose_min_unit_chars_gives_every_unit_a_question(
+    fixture_document: StructuredDocument,
+) -> None:
+    # Generous budget: the finest threshold (the floor) already fits.
+    assert choose_min_unit_chars(fixture_document, 20) == AUTO_MIN_UNIT_CHARS_FLOOR
+    # Tight budget: the threshold grows until units <= questions (merging never crosses
+    # parents, so the fixture cannot go below 5 units: root, chapter intros, two sibling runs).
+    threshold = choose_min_unit_chars(fixture_document, 5)
+    assert AUTO_MIN_UNIT_CHARS_FLOOR < threshold <= AUTO_MIN_UNIT_CHARS_CAP
+    plan = build_plan(fixture_document, "r1", 5, min_unit_chars=threshold)
+    assert len(plan.units) <= 5 and all(u.questions >= 1 for u in plan.units)
+    # Impossible budget: the cap is returned and zero-budget units remain.
+    assert choose_min_unit_chars(fixture_document, 1) == AUTO_MIN_UNIT_CHARS_CAP
+
+
+def test_build_plan_auto_threshold_is_recorded(fixture_document: StructuredDocument) -> None:
+    auto = build_plan(fixture_document, "r1", 3)
+    assert auto.min_unit_chars_auto is True
+    assert auto.min_unit_chars == choose_min_unit_chars(fixture_document, 3)
+    fixed = build_plan(fixture_document, "r1", 3, min_unit_chars=400)
+    assert fixed.min_unit_chars_auto is False and fixed.min_unit_chars == 400
+
+
+def test_plan_stage_override_beats_configured_threshold(
+    ctx: RunContext, fixture_document: StructuredDocument
+) -> None:
+    ctx.store.save(ctx.run_id, artifacts.DOCUMENT, fixture_document)
+    plan = PlanStage(min_unit_chars=None).run(ctx, 4, min_unit_chars=400)
+    assert plan.min_unit_chars == 400 and plan.min_unit_chars_auto is False
+    plan = PlanStage(min_unit_chars=None).run(ctx, 4)
+    assert plan.min_unit_chars_auto is True
 
 
 def test_build_plan_rejects_non_positive_total(fixture_document: StructuredDocument) -> None:

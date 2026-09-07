@@ -193,7 +193,8 @@ class Container:
         return ParseStage(self.parser())
 
     def plan_stage(self) -> PlanStage:
-        return PlanStage(min_unit_chars=self.settings.plan_min_unit_chars)
+        configured = self.settings.plan_min_unit_chars
+        return PlanStage(min_unit_chars=None if configured == "auto" else configured)
 
     def classify_stage(self, ctx: RunContext) -> ClassifyStage:
         return ClassifyStage(self.taxonomy_builder(ctx.tracker))

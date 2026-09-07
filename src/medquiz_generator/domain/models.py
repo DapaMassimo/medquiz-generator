@@ -119,6 +119,9 @@ class GenerationPlan(BaseModel):
     document_hash: str
     total_questions: int = Field(ge=1)
     min_unit_chars: int
+    min_unit_chars_auto: bool = Field(
+        default=False, description="True when the merge threshold was chosen automatically."
+    )
     units: list[PlanUnit]
     skipped_section_ids: list[str] = Field(default_factory=list)
     created_at: datetime = Field(default_factory=utcnow)

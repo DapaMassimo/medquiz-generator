@@ -37,10 +37,11 @@ def render_plan(plan: GenerationPlan) -> str:
         ]
         for u in plan.units
     ]
+    mode = "auto" if plan.min_unit_chars_auto else "fixed"
     header = (
         f"Plan for run {plan.run_id}: {plan.planned_questions}/{plan.total_questions} "
-        f"questions over {len(plan.units)} units "
-        f"({len(plan.skipped_section_ids)} sections skipped as noise)\n"
+        f"questions over {len(plan.units)} units, merge threshold {plan.min_unit_chars} chars "
+        f"({mode}); {len(plan.skipped_section_ids)} sections skipped as noise\n"
     )
     return header + _table(["unit", "title", "pages", "chars", "weight", "q", "note"], rows)
 

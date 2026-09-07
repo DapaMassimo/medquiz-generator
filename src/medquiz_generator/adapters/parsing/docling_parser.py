@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import hashlib
 import logging
+import re
 from collections.abc import Iterator
 from pathlib import Path
 from typing import Any
@@ -24,7 +25,11 @@ from medquiz_generator.domain.models import StructuredDocument
 
 log = logging.getLogger(__name__)
 
-_SKIPPED_LABELS = {"page_header", "page_footer", "picture", "caption", "footnote"}
+# Captions are kept as text: a table's title is often the only trace of a rasterised table.
+_SKIPPED_LABELS = {"page_header", "page_footer", "picture", "footnote"}
+# Layout models label bold captions ("Tabella 3.5 …", "Figura 3.2") as section headers; they
+# are not sections and would split the document into empty, meaningless nodes.
+_CAPTION_HEADING = re.compile(r"^\s*(Tabella|Tab\.|Figura|Fig\.|Box|Scheda)\s*\d", re.IGNORECASE)
 
 # ------------------------------------------------------------------ model licences
 #
@@ -135,8 +140,12 @@ def iter_outline_items(document: Any) -> Iterator[OutlineItem]:
         if cls == "TitleItem" or label == "title":
             yield OutlineItem("heading", str(getattr(item, "text", "")), page, level=1)
         elif cls == "SectionHeaderItem" or label == "section_header":
+            heading = str(getattr(item, "text", ""))
+            if _CAPTION_HEADING.match(heading):
+                yield OutlineItem("text", heading, page)
+                continue
             level = int(getattr(item, "level", 1)) + 1
-            yield OutlineItem("heading", str(getattr(item, "text", "")), page, level=level)
+            yield OutlineItem("heading", heading, page, level=level)
         elif cls == "TableItem" or label == "table":
             try:
                 markdown = item.export_to_markdown(doc=document)
