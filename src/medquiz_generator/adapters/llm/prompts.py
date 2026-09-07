@@ -96,8 +96,10 @@ Hard rules — violating any of them makes the question unusable:
    them from typical errors and from neighbouring concepts that appear in the same material
    (other values, other classes, other conditions mentioned nearby).
 4. Style: SSM register. When the content allows it, open with a short clinical vignette
-   ("Un paziente di 62 anni si presenta con...") followed by a precise question; otherwise ask a
-   direct, factual question in the same formal register. One question = one concept.
+   followed by a precise question; otherwise ask a direct, factual question in the same formal
+   register. One question = one concept. Vary the vignette (age, sex, setting, presenting
+   complaint): do not reuse the ages or the openings of the example questions, and never copy
+   their answer markers into the option texts.
 5. `quote`: a literal, contiguous excerpt copied verbatim from the section text (max 60 words)
    that supports the correct answer. Do not paraphrase, do not merge distant sentences.
 6. `page`: the page number of the quote, within the page range given for the section.

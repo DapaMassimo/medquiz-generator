@@ -121,7 +121,10 @@ def test_generator_adapter_maps_wire_batch(fixture_document: StructuredDocument)
         questions=[
             prompts.WireQuestion(
                 question="Domanda?",
-                options=[prompts.WireOption(id=i, text=f"opt {i}") for i in "ABCDE"],  # type: ignore[arg-type]
+                options=[
+                    prompts.WireOption(id=i, text=f"opt {i} [corretta]" if i == "B" else f"opt {i}")  # type: ignore[arg-type]
+                    for i in "ABCDE"
+                ],
                 correct_option_id="B",
                 explanation="Spiegazione lunga a sufficienza per il controllo.",
                 difficulty="difficile",
@@ -138,6 +141,7 @@ def test_generator_adapter_maps_wire_batch(fixture_document: StructuredDocument)
     [question] = batch.questions
     assert question.correct_option_id == "B" and question.difficulty == "difficile"
     assert question.page == 2 and question.options[4].id == "E"
+    assert question.options[1].text == "opt B"  # copied answer marker stripped
     # The prompt carries the section text and the few-shot examples.
     messages = llm._model.runnable.invocations[0]  # type: ignore[attr-defined]
     user_prompt = messages[1].content

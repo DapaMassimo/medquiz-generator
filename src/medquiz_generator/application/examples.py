@@ -133,13 +133,18 @@ def load_ssm_examples(path: Path) -> list[SsmExample]:
 
 
 def format_examples(examples: list[SsmExample], max_examples: int | None = None) -> str:
-    """Render examples as few-shot text (Italian content, as in the real exam)."""
+    """Render examples as few-shot text (Italian content, as in the real exam).
+
+    The correct answer is stated on its own line after the options: an inline marker next to
+    the option text gets copied by the model into the options it generates.
+    """
     chunks: list[str] = []
     for example in examples[:max_examples]:
         lines = [f"Domanda {example.number}", example.question, ""]
         for option in example.options:
-            marker = "[corretta]" if option.id == example.correct_option_id else ""
-            lines.append(f"{option.id}: {option.text} {marker}".rstrip())
+            lines.append(f"{option.id}: {option.text}")
+        if example.correct_option_id is not None:
+            lines += ["", f"Risposta corretta: {example.correct_option_id}"]
         if example.commentary:
             lines += ["", f"Commento: {example.commentary}"]
         chunks.append("\n".join(lines))

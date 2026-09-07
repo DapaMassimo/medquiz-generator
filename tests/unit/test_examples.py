@@ -156,7 +156,9 @@ def test_format_examples_marks_correct_option() -> None:
     examples = parse_ssm_examples(SAMPLE)
     text = format_examples(examples, max_examples=1)
     assert "Domanda 1" in text
-    assert "A: Acalasia esofagea [corretta]" in text
+    assert "A: Acalasia esofagea" in text
+    assert "[corretta]" not in text  # inline markers get copied by the model
+    assert "Risposta corretta: A" in text
     assert "Domanda 2" not in text
 
 
@@ -177,5 +179,7 @@ def test_real_json_examples_match_text_file() -> None:
 def test_format_examples_keeps_original_option_order() -> None:
     examples = load_ssm_examples(EXAMPLES_PATH)
     text = format_examples(examples, max_examples=3)
-    marked = [line[0] for line in text.splitlines() if "[corretta]" in line]
-    assert marked == [e.correct_option_id for e in examples[:3]]
+    answers = [
+        line.split(": ")[1] for line in text.splitlines() if line.startswith("Risposta corretta")
+    ]
+    assert answers == [e.correct_option_id for e in examples[:3]]

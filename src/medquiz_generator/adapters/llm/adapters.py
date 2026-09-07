@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+import re
 
 from medquiz_generator.adapters.llm import prompts
 from medquiz_generator.adapters.llm.langchain_llm import StructuredLLM
@@ -25,6 +26,15 @@ from medquiz_generator.domain.models import (
 )
 
 log = logging.getLogger(__name__)
+
+# Answer markers the model may copy from few-shot examples into its own option texts.
+_ANSWER_MARKER = re.compile(
+    r"\s*(\[corretta\]|\((?:risposta\s+)?corretta\)|✅|✔|✓)\s*$", re.IGNORECASE
+)
+
+
+def clean_option_text(text: str) -> str:
+    return _ANSWER_MARKER.sub("", text).strip()
 
 
 class LangChainQuestionGenerator:
@@ -51,7 +61,7 @@ class LangChainQuestionGenerator:
         questions = [
             GeneratedQuestion(
                 question=q.question,
-                options=[Option(id=o.id, text=o.text) for o in q.options],
+                options=[Option(id=o.id, text=clean_option_text(o.text)) for o in q.options],
                 correct_option_id=q.correct_option_id,
                 explanation=q.explanation,
                 difficulty=Difficulty(q.difficulty),
