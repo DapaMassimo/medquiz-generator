@@ -115,6 +115,16 @@ def derive_verdict(wire: prompts.WireVerdict, marked: str) -> JudgeVerdict:
     elif verdict == "pass" and len(status) < 5:
         verdict = "flag"
         reason = f"valutazione incompleta delle opzioni ({len(status)}/5); {wire.reason}"
+    explanation_supported = wire.explanation_status == "supported"
+    if verdict == "pass" and not explanation_supported:
+        # The answer stands, but the explanation brings in facts the reader cannot verify on
+        # the source: a human decides whether to trim it.
+        verdict = "flag"
+        note = wire.explanation_note or "dettagli assenti dal testo"
+        reason = (
+            f"spiegazione non pienamente sostenuta dal passaggio "
+            f"({wire.explanation_status}: {note}); {wire.reason}"
+        )
     return JudgeVerdict(
         verdict=verdict,  # type: ignore[arg-type]
         reason=reason,
@@ -122,6 +132,8 @@ def derive_verdict(wire: prompts.WireVerdict, marked: str) -> JudgeVerdict:
         single_correct=single_correct,
         distractors_wrong=distractors_wrong,
         option_status=status,
+        explanation_supported=explanation_supported,
+        explanation_note=wire.explanation_note,
     )
 
 

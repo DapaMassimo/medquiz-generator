@@ -71,6 +71,15 @@ class WireVerdict(BaseModel):
     options: list[WireOptionAssessment] = Field(
         description="One assessment for every option, A to E, in order"
     )
+    explanation_status: Literal["supported", "partially_supported", "not_supported"] = Field(
+        description="supported = every fact in the explanation is in the passage; "
+        "partially_supported = the core is in the passage but some facts are not; "
+        "not_supported = the explanation relies on facts absent from the passage"
+    )
+    explanation_note: str = Field(
+        description="The facts of the explanation that are NOT in the passage, in Italian; "
+        "empty when supported"
+    )
     verdict: Literal["pass", "discard", "flag"]
     reason: str = Field(description="Short justification in Italian")
 
@@ -177,7 +186,10 @@ Work in this order:
    "contradicted" if the passage states otherwise; "not_in_passage" if it says nothing.
    Judge each option by its TEXT, not by its letter; the marked answer is given as letter and
    text so you can check they correspond.
-3. verdict:
+3. explanation_status: check the explanation sentence by sentence against the passage. Facts
+   that are true in medicine but absent from the passage count as NOT in the passage: list them
+   in explanation_note.
+4. verdict:
    - "discard" when the marked option is not "supported", when a second option is also
      "supported", or when the question contradicts the passage;
    - "flag" when support is only partial, the wording is ambiguous, a distractor is borderline,
@@ -196,6 +208,7 @@ def judge_user_prompt(item: QuizItem, passage: str) -> str:
         f"### Question\n{item.question}\n\n"
         f"### Options\n{options}\n\n"
         f"### Marked correct option\n{item.correct_option_id}: {marked}\n\n"
+        f"### Explanation given with the question\n{item.explanation}\n\n"
         "Evaluate and return the structured verdict."
     )
 

@@ -53,7 +53,11 @@ class FakeChatModel:
 
 
 def wire_verdict(
-    verdict: str, reason: str, status: dict[str, str] | None = None
+    verdict: str,
+    reason: str,
+    status: dict[str, str] | None = None,
+    explanation_status: str = "supported",
+    explanation_note: str = "",
 ) -> prompts.WireVerdict:
     """Assessments where A is supported and the others are not, unless overridden."""
     base = {
@@ -70,6 +74,8 @@ def wire_verdict(
             prompts.WireOptionAssessment(id=oid, status=st, evidence="…")  # type: ignore[arg-type]
             for oid, st in base.items()
         ],
+        explanation_status=explanation_status,  # type: ignore[arg-type]
+        explanation_note=explanation_note,
         verdict=verdict,  # type: ignore[arg-type]
         reason=reason,
     )
@@ -262,12 +268,29 @@ def test_derive_verdict_overrides_a_lenient_model() -> None:
     partial = prompts.WireVerdict(
         passage_answer="x",
         options=[prompts.WireOptionAssessment(id="A", status="supported", evidence="e")],
+        explanation_status="supported",
+        explanation_note="",
         verdict="pass",
         reason="ok",
     )
     assert derive_verdict(partial, "A").verdict == "flag"
+    # An explanation that brings in facts absent from the passage turns a pass into a flag.
+    outside = wire_verdict(
+        "pass", "ok", explanation_status="partially_supported", explanation_note="PaO2 < 60 mmHg"
+    )
+    result = derive_verdict(outside, "A")
+    assert result.verdict == "flag" and result.explanation_supported is False
+    assert "PaO2" in result.reason and result.explanation_note == "PaO2 < 60 mmHg"
+    # …but never rescues a discard, and a flagged verdict stays flagged.
+    assert (
+        derive_verdict(
+            wire_verdict("discard", "no", {"A": "contradicted"}, "not_supported"), "A"
+        ).verdict
+        == "discard"
+    )
 
 
-def test_judge_prompt_shows_marked_option_text() -> None:
+def test_judge_prompt_shows_marked_option_text_and_explanation() -> None:
     text = prompts.judge_user_prompt(good_item(), "passaggio")
     assert "### Marked correct option\nA: Monitoraggio pressorio delle 24 ore" in text
+    assert "### Explanation given with the question" in text

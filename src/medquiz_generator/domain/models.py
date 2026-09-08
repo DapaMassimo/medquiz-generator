@@ -288,6 +288,10 @@ class JudgeVerdict(BaseModel):
         default_factory=dict,
         description="Per option id: supported | contradicted | not_in_passage, as judged.",
     )
+    explanation_supported: bool = Field(
+        default=True, description="Every fact in the explanation appears in the passage."
+    )
+    explanation_note: str = ""
 
 
 class VerificationRecord(BaseModel):
