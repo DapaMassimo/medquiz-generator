@@ -9,6 +9,8 @@ from medquiz_generator.adapters.llm import prompts
 from medquiz_generator.adapters.llm.langchain_llm import StructuredLLM
 from medquiz_generator.domain.models import (
     Difficulty,
+    FigureAssessment,
+    FigureRef,
     GeneratedBatch,
     GeneratedQuestion,
     JudgeVerdict,
@@ -172,6 +174,32 @@ class LangChainTaxonomyBuilder:
             topic.section_ids.append(section_id)
         return Taxonomy(
             run_id=run_id, document_hash=document.content_hash, subjects=list(subjects.values())
+        )
+
+
+class LangChainFigureTriage:
+    def __init__(self, llm: StructuredLLM, document_context: dict[str, str] | None = None) -> None:
+        self._llm = llm
+        self._context = document_context or {}
+
+    @property
+    def model_name(self) -> str:
+        return self._llm.model_name
+
+    def classify(self, figure: FigureRef, image: bytes) -> FigureAssessment:
+        wire = self._llm.invoke(
+            prompts.FIGURE_TRIAGE_SYSTEM,
+            prompts.figure_triage_user_prompt(
+                figure.caption, self._context.get(figure.section_id, "")
+            ),
+            prompts.WireFigureAssessment,
+            images=[image],
+        )
+        return FigureAssessment(
+            kind=wire.kind,
+            description=wire.description,
+            question_worthy=wire.question_worthy and wire.kind == "clinical_image",
+            reason=wire.reason,
         )
 
 

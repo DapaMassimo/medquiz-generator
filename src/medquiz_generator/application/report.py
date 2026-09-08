@@ -13,6 +13,7 @@ from medquiz_generator.application import artifacts
 from medquiz_generator.application.context import RunContext
 from medquiz_generator.domain.models import (
     DedupReport,
+    FigureCatalog,
     GenerationPlan,
     QuestionStatus,
     QuizItem,
@@ -86,6 +87,17 @@ def build_run_report(ctx: RunContext) -> RunReport:
     if ctx.store.exists(ctx.run_id, artifacts.DEDUP_REPORT):
         duplicates = len(ctx.store.load(ctx.run_id, artifacts.DEDUP_REPORT, DedupReport).pairs)
 
+    figures_total = 0
+    figures_worthy = 0
+    if ctx.store.exists(ctx.run_id, artifacts.FIGURES):
+        catalog = ctx.store.load(ctx.run_id, artifacts.FIGURES, FigureCatalog)
+        figures_total = len(catalog.figures)
+        figures_worthy = sum(1 for f in catalog.figures if f.question_worthy)
+    elif ctx.store.exists(ctx.run_id, artifacts.DOCUMENT):
+        figures_total = len(
+            ctx.store.load(ctx.run_id, artifacts.DOCUMENT, StructuredDocument).figures
+        )
+
     usage_records = ctx.store.read_jsonl(ctx.run_id, artifacts.USAGE_LOG, UsageRecord)
     by_stage, by_unit, by_item, total = summarize_usage(usage_records)
     models: dict[str, str] = {}
@@ -118,6 +130,9 @@ def build_run_report(ctx: RunContext) -> RunReport:
         duplicates=duplicates,
         styles_requested=styles_requested,
         styles_delivered=dict(Counter(i.style.value for i in delivered)),
+        figures_total=figures_total,
+        figures_question_worthy=figures_worthy,
+        image_questions=sum(1 for i in items if i.image is not None),
         stage_timings=timings,
         usage_by_stage=by_stage,
         usage_by_unit=by_unit,

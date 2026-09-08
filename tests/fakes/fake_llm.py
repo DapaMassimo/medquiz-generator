@@ -9,6 +9,8 @@ from collections.abc import Callable
 from medquiz_generator.domain.models import (
     OPTION_IDS,
     Difficulty,
+    FigureAssessment,
+    FigureRef,
     GeneratedBatch,
     GeneratedQuestion,
     JudgeVerdict,
@@ -186,6 +188,34 @@ class FakeEmbeddings:
             norm = sum(v * v for v in vec) ** 0.5 or 1.0
             vectors.append([v / norm for v in vec])
         return vectors
+
+
+class FakeFigureTriage:
+    """Classifies by caption keyword: 'ECG'/'radiografia'/'TC' → clinical, else diagram."""
+
+    def __init__(self, tracker: UsageTracker | None = None) -> None:
+        self._tracker = tracker
+        self.calls: list[str] = []
+
+    @property
+    def model_name(self) -> str:
+        return "fake-vision"
+
+    def classify(self, figure: FigureRef, image: bytes) -> FigureAssessment:
+        self.calls.append(figure.id)
+        if self._tracker is not None:
+            self._tracker.record(
+                UsageRecord(
+                    run_id="", stage="", model="fake-vision", input_tokens=900, output_tokens=60
+                )
+            )
+        clinical = any(k in figure.caption.lower() for k in ("ecg", "radiograf", "tc ", "rm "))
+        return FigureAssessment(
+            kind="clinical_image" if clinical else "diagram",
+            description=f"figura {figure.id}",
+            question_worthy=clinical,
+            reason="fake triage",
+        )
 
 
 class FakeStyleJudge:

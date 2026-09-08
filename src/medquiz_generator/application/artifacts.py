@@ -7,6 +7,8 @@ CLI command independently re-runnable.
 from __future__ import annotations
 
 DOCUMENT = "document"
+FIGURES = "figures"
+FIGURES_DIR = "assets/figures"
 PLAN = "plan"
 TAXONOMY = "taxonomy"
 QUESTIONS_GENERATED = "questions.generated"

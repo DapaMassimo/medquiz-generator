@@ -67,6 +67,10 @@ class Settings(BaseSettings):
     max_examples_in_prompt: int = Field(default=5, ge=3, le=5)
     # Share of question styles, in percent: "vignetta=70,nozionistica=30".
     style_mix: str = "vignetta=70,nozionistica=30"
+    # Figures: extract them from the PDF as run assets and triage them with a vision model.
+    images_enabled: bool = False
+    images_min_side_px: int = 80
+    vision_model: str = "gpt-4.1"
     # 'random' = k drawn from the whole pool, seeded by the section so re-runs reproduce;
     # 'first' = the first N of the file, the same for every unit; 'semantic' = closest to the
     # section by embedding, used only when the pool is larger than max_examples_in_prompt.

@@ -13,6 +13,7 @@ from medquiz_generator.application.classify import ClassifyStage
 from medquiz_generator.application.context import RunContext
 from medquiz_generator.application.dedup import DedupStage
 from medquiz_generator.application.export import ExportStage
+from medquiz_generator.application.figures import FiguresStage
 from medquiz_generator.application.generate import GenerateStage
 from medquiz_generator.application.parse import ParseStage
 from medquiz_generator.application.plan import PlanStage
@@ -31,6 +32,7 @@ class Stages:
     dedup: DedupStage
     export: ExportStage
     report: ReportStage
+    figures: FiguresStage | None = None
 
 
 class Pipeline:
@@ -49,6 +51,8 @@ class Pipeline:
     ) -> RunReport:
         stages = self._stages
         stages.parse.run(ctx, pdf_path, use_cache=use_cache)
+        if stages.figures is not None:
+            stages.figures.run(ctx)
         stages.plan.run(ctx, total_questions, min_unit_chars=min_unit_chars)
         stages.classify.run(ctx)
         stages.report.run(ctx)

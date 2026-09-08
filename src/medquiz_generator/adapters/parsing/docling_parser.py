@@ -10,14 +10,14 @@ from __future__ import annotations
 import hashlib
 import logging
 import re
-from collections.abc import Iterator
+from collections.abc import Callable, Iterator
 from pathlib import Path
 from typing import Any
 
 from medquiz_generator.adapters.parsing.docling_cache import DoclingDocumentCache
 from medquiz_generator.adapters.parsing.outline import (
     OutlineItem,
-    build_sections,
+    build_outline,
     infer_levels_from_case,
 )
 from medquiz_generator.domain.errors import ParsingError
@@ -104,12 +104,18 @@ def content_hash_of(path: Path) -> str:
     return digest.hexdigest()
 
 
-def _build_converter(artifacts_path: Path | None, do_ocr: bool, ocr_engine: str) -> Any:
+def _build_converter(
+    artifacts_path: Path | None, do_ocr: bool, ocr_engine: str, *, picture_images: bool = False
+) -> Any:
     from docling.datamodel.base_models import InputFormat
     from docling.datamodel.pipeline_options import PdfPipelineOptions, TableStructureOptions
     from docling.document_converter import DocumentConverter, PdfFormatOption
 
     options = PdfPipelineOptions(do_ocr=do_ocr)
+    if picture_images:
+        # Keep rendered crops of the figures so they can be saved as run assets.
+        options.generate_picture_images = True
+        options.images_scale = 2.0
     # Pinned, not inherited: see the model-licence note above.
     options.table_structure_options = TableStructureOptions()
     if do_ocr:
@@ -131,12 +137,65 @@ def _page_of(item: Any) -> int:
     return 1
 
 
-def iter_outline_items(document: Any) -> Iterator[OutlineItem]:
+FigureSaver = Callable[[Any, int], OutlineItem | None]
+
+
+def _figure_size(item: Any) -> tuple[int, int]:
+    prov = getattr(item, "prov", None) or []
+    bbox = getattr(prov[0], "bbox", None) if prov else None
+    if bbox is None:
+        return 0, 0
+    return int(abs(bbox.r - bbox.l)), int(abs(bbox.t - bbox.b))
+
+
+def make_figure_saver(document: Any, assets_dir: Path, *, min_side: int) -> FigureSaver:
+    """Save Docling picture items as PNG under ``assets_dir`` and describe them as outline
+    items; tiny pictures (icons, bullets) are skipped."""
+    assets_dir.mkdir(parents=True, exist_ok=True)
+    counter = {"n": 0}
+
+    def save(item: Any, page: int) -> OutlineItem | None:
+        width, height = _figure_size(item)
+        if min(width, height) < min_side:
+            return None
+        try:
+            image = item.get_image(document)
+        except Exception:  # picture export is best-effort
+            image = None
+        if image is None:
+            return None
+        counter["n"] += 1
+        filename = f"f{counter['n']:03d}.png"
+        image.save(assets_dir / filename)
+        try:
+            caption = str(item.caption_text(document) or "")
+        except Exception:
+            caption = ""
+        return OutlineItem(
+            "figure",
+            caption,
+            page,
+            ref=f"{assets_dir.parent.name}/{assets_dir.name}/{filename}",
+            width=width,
+            height=height,
+        )
+
+    return save
+
+
+def iter_outline_items(
+    document: Any, figure_saver: FigureSaver | None = None
+) -> Iterator[OutlineItem]:
     """Translate Docling items into OutlineItems, tolerant to Docling version drift."""
     for item, _level in document.iterate_items():
         label = str(getattr(getattr(item, "label", ""), "value", getattr(item, "label", "")))
         cls = type(item).__name__
         page = _page_of(item)
+        if figure_saver is not None and (cls == "PictureItem" or label == "picture"):
+            figure = figure_saver(item, page)
+            if figure is not None:
+                yield figure
+            continue
         if cls == "TitleItem" or label == "title":
             yield OutlineItem("heading", str(getattr(item, "text", "")), page, level=1)
         elif cls == "SectionHeaderItem" or label == "section_header":
@@ -162,11 +221,22 @@ def iter_outline_items(document: Any) -> Iterator[OutlineItem]:
 
 
 def structured_document_from_docling(
-    document: Any, *, source_path: Path, content_hash: str, parser_name: str
+    document: Any,
+    *,
+    source_path: Path,
+    content_hash: str,
+    parser_name: str,
+    assets_dir: Path | None = None,
+    min_figure_side: int = 80,
 ) -> StructuredDocument:
-    items = infer_levels_from_case(list(iter_outline_items(document)))
+    saver = (
+        make_figure_saver(document, assets_dir, min_side=min_figure_side)
+        if assets_dir is not None
+        else None
+    )
+    items = infer_levels_from_case(list(iter_outline_items(document, saver)))
     title = next((i.text for i in items if i.kind == "heading"), source_path.stem)
-    sections = build_sections(items, root_title=title)
+    sections, figures = build_outline(items, root_title=title)
     if not sections:
         raise ParsingError(f"No text could be extracted from {source_path}.")
     pages = getattr(document, "pages", None)
@@ -177,6 +247,7 @@ def structured_document_from_docling(
         title=title,
         page_count=max(1, page_count),
         sections=sections,
+        figures=figures,
         parser=parser_name,
     )
 
@@ -189,37 +260,52 @@ class DoclingParser:
         artifacts_path: Path | None = None,
         do_ocr: bool = False,
         ocr_engine: str = "rapidocr",
+        min_figure_side: int = 80,
     ) -> None:
         self._cache = DoclingDocumentCache(cache_dir)
         self._artifacts_path = artifacts_path
         self._do_ocr = do_ocr
         self._ocr_engine = ocr_engine
-        self._converter: Any | None = None
+        self._converters: dict[str, Any] = {}
+        self._min_figure_side = min_figure_side
 
     @property
     def name(self) -> str:
         return f"docling(ocr={'on' if self._do_ocr else 'off'})"
 
-    def _convert(self, pdf_path: Path) -> Any:
-        if self._converter is None:
-            self._converter = _build_converter(self._artifacts_path, self._do_ocr, self._ocr_engine)
+    def _convert(self, pdf_path: Path, *, picture_images: bool = False) -> Any:
+        key = "img" if picture_images else "text"
+        converter = self._converters.get(key)
+        if converter is None:
+            converter = _build_converter(
+                self._artifacts_path, self._do_ocr, self._ocr_engine, picture_images=picture_images
+            )
+            self._converters[key] = converter
         try:
-            return self._converter.convert(str(pdf_path)).document
+            return converter.convert(str(pdf_path)).document
         except Exception as exc:  # normalise any Docling failure
             raise ParsingError(f"Docling failed on {pdf_path}: {exc}") from exc
 
-    def parse(self, pdf_path: Path, *, use_cache: bool = True) -> StructuredDocument:
+    def parse(
+        self, pdf_path: Path, *, use_cache: bool = True, assets_dir: Path | None = None
+    ) -> StructuredDocument:
         if not pdf_path.exists():
             raise ParsingError(f"PDF not found: {pdf_path}")
         content_hash = content_hash_of(pdf_path)
-        suffix = ".ocr1" if self._do_ocr else ".ocr0"
+        with_images = assets_dir is not None
+        suffix = (".ocr1" if self._do_ocr else ".ocr0") + (".img1" if with_images else "")
         document = self._cache.get(content_hash, use_disk=use_cache, disk_suffix=suffix)
         if document is None:
             log.info("Parsing %s with Docling (%s)", pdf_path.name, self.name)
-            document = self._convert(pdf_path)
+            document = self._convert(pdf_path, picture_images=with_images)
             self._cache.put(content_hash, document, use_disk=use_cache, disk_suffix=suffix)
         else:
             log.info("Parse cache hit for %s", pdf_path.name)
         return structured_document_from_docling(
-            document, source_path=pdf_path, content_hash=content_hash, parser_name=self.name
+            document,
+            source_path=pdf_path,
+            content_hash=content_hash,
+            parser_name=self.name,
+            assets_dir=assets_dir,
+            min_figure_side=self._min_figure_side,
         )

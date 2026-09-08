@@ -7,6 +7,7 @@ retry policy, token accounting and cost attribution for free.
 
 from __future__ import annotations
 
+import base64
 import logging
 import re
 import time
@@ -89,9 +90,27 @@ class StructuredLLM:
     def model_name(self) -> str:
         return self._model_name
 
-    def invoke(self, system_prompt: str, user_prompt: str, schema: type[M]) -> M:
+    def invoke(
+        self,
+        system_prompt: str,
+        user_prompt: str,
+        schema: type[M],
+        *,
+        images: list[bytes] | None = None,
+    ) -> M:
+        """``images`` (PNG bytes) are attached to the user message for vision-capable models."""
         runnable = self._model.with_structured_output(schema, include_raw=True)
-        messages = [SystemMessage(content=system_prompt), HumanMessage(content=user_prompt)]
+        if images:
+            content: list[dict[str, Any]] = [{"type": "text", "text": user_prompt}]
+            for png in images:
+                encoded = base64.b64encode(png).decode("ascii")
+                content.append(
+                    {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{encoded}"}}
+                )
+            human = HumanMessage(content=content)  # type: ignore[arg-type]
+        else:
+            human = HumanMessage(content=user_prompt)
+        messages = [SystemMessage(content=system_prompt), human]
         last_error: Exception | None = None
         for attempt in range(1, self._max_attempts + 1):
             t0 = time.perf_counter()

@@ -265,6 +265,41 @@ def taxonomy_user_prompt(document: StructuredDocument, snippet_chars: int = 1000
     return "\n".join(lines)
 
 
+# ---------------------------------------------------------------- figure triage
+
+FigureKindWire = Literal["clinical_image", "chart", "diagram", "table_image", "icon", "other"]
+
+
+class WireFigureAssessment(BaseModel):
+    kind: FigureKindWire = Field(
+        description="clinical_image = ECG, radiology, ultrasound, histology, endoscopy, "
+        "dermatology or clinical photo; chart = plot of data; diagram = schematic/flowchart; "
+        "table_image = a table rendered as a picture; icon = decoration"
+    )
+    description: str = Field(description="One sentence in Italian describing what is shown")
+    question_worthy: bool = Field(
+        description="True only for a clinical_image that a candidate could be asked to interpret"
+    )
+    reason: str = Field(description="Short justification in Italian")
+
+
+FIGURE_TRIAGE_SYSTEM = """You classify figures extracted from a medical textbook for an exam
+question generator. Decide what kind of figure it is and whether a candidate could be asked to
+interpret it in a multiple-choice question (an ECG trace, an X-ray, a CT/MRI slice, an
+ultrasound, a histological slide, an endoscopic or dermatological photo). Schematics,
+flowcharts, mechanism diagrams, data charts, tables rendered as images and decorative icons are
+NOT question-worthy: a question about them would test the book's drawing, not medicine.
+Use the caption and the surrounding text only to understand the figure."""
+
+
+def figure_triage_user_prompt(caption: str, context: str) -> str:
+    return (
+        f"### Caption\n{caption or '(nessuna didascalia)'}\n\n"
+        f"### Surrounding text\n{context[:1200]}\n\n"
+        "Classify the attached figure and return the structured assessment."
+    )
+
+
 # -------------------------------------------------------------------- style judge
 
 STYLE_JUDGE_SYSTEM = """You are a senior author of Italian SSM exam questions evaluating a

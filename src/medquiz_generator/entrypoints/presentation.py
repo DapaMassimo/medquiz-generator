@@ -77,6 +77,12 @@ def render_report(report: RunReport) -> str:
             + " | delivered: "
             + ", ".join(f"{k}={v}" for k, v in report.styles_delivered.items())
         )
+    if report.figures_total:
+        lines.append(
+            f"Figures: {report.figures_total} extracted, "
+            f"{report.figures_question_worthy} question-worthy, "
+            f"{report.image_questions} image questions"
+        )
     if report.deterministic_failures:
         lines.append(
             "Deterministic failures: "

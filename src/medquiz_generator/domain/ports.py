@@ -12,6 +12,8 @@ from typing import Protocol, TypeVar
 from pydantic import BaseModel
 
 from medquiz_generator.domain.models import (
+    FigureAssessment,
+    FigureRef,
     GeneratedBatch,
     JudgeVerdict,
     PlanUnit,
@@ -34,7 +36,21 @@ class DocumentParser(Protocol):
     @property
     def name(self) -> str: ...
 
-    def parse(self, pdf_path: Path, *, use_cache: bool = True) -> StructuredDocument: ...
+    def parse(
+        self, pdf_path: Path, *, use_cache: bool = True, assets_dir: Path | None = None
+    ) -> StructuredDocument:
+        """``assets_dir`` (when given) receives the figures as PNG files, listed in the
+        document; without it figures are not extracted."""
+        ...
+
+
+class FigureTriage(Protocol):
+    """Vision model classifying a figure and saying whether it can carry an exam question."""
+
+    @property
+    def model_name(self) -> str: ...
+
+    def classify(self, figure: FigureRef, image: bytes) -> FigureAssessment: ...
 
 
 class TaxonomyBuilder(Protocol):

@@ -24,6 +24,7 @@ SCHEMA_VERSION = 1
 
 class Stage(StrEnum):
     PARSE = "parse"
+    FIGURES = "figures"
     PLAN = "plan"
     CLASSIFY = "classify"
     GENERATE = "generate"
@@ -71,6 +72,43 @@ class Section(BaseModel):
         return len(self.text)
 
 
+FigureKind = Literal[
+    "unclassified", "clinical_image", "chart", "diagram", "table_image", "icon", "other"
+]
+
+
+class FigureRef(BaseModel):
+    """A figure extracted from the PDF and saved as an asset of the run."""
+
+    id: str
+    page: int = Field(ge=1)
+    section_id: str
+    caption: str = ""
+    path: str = Field(description="Relative to the run directory, e.g. assets/figures/f001.png")
+    width: int = 0
+    height: int = 0
+    kind: FigureKind = "unclassified"
+    description: str = ""
+    question_worthy: bool = False
+    triage_reason: str = ""
+
+
+class FigureCatalog(BaseModel):
+    """Output of the *figures* stage: every figure with its triage outcome."""
+
+    schema_version: int = SCHEMA_VERSION
+    run_id: str
+    figures: list[FigureRef]
+    created_at: datetime = Field(default_factory=utcnow)
+
+
+class FigureAssessment(BaseModel):
+    kind: FigureKind
+    description: str
+    question_worthy: bool
+    reason: str = ""
+
+
 class StructuredDocument(BaseModel):
     """Output of the *parse* stage: a flat, ordered list of sections with page ranges."""
 
@@ -80,6 +118,7 @@ class StructuredDocument(BaseModel):
     title: str
     page_count: int = Field(ge=1)
     sections: list[Section]
+    figures: list[FigureRef] = Field(default_factory=list)
     parser: str = "unknown"
     parsed_at: datetime = Field(default_factory=utcnow)
 
@@ -234,6 +273,15 @@ class ModelMetadata(BaseModel):
     generated_at: datetime = Field(default_factory=utcnow)
 
 
+class ImageRef(BaseModel):
+    """The figure a question is about (image questions only)."""
+
+    figure_id: str
+    path: str
+    caption: str = ""
+    page: int = 1
+
+
 class QuizItem(BaseModel):
     """The deliverable: one SSM-style multiple-choice question with source and status."""
 
@@ -247,6 +295,7 @@ class QuizItem(BaseModel):
     explanation: str
     difficulty: Difficulty
     style: QuestionStyle = QuestionStyle.VIGNETTA
+    image: ImageRef | None = None
     source: SourceRef
     status: StatusInfo = Field(default_factory=StatusInfo)
     model_metadata: ModelMetadata
@@ -488,6 +537,9 @@ class RunReport(BaseModel):
     styles_delivered: dict[str, int] = Field(
         default_factory=dict, description="Delivered (verified + flagged) questions per style."
     )
+    figures_total: int = 0
+    figures_question_worthy: int = 0
+    image_questions: int = 0
     stage_timings: list[StageTiming] = Field(default_factory=list)
     usage_by_stage: dict[str, UsageSummary] = Field(default_factory=dict)
     usage_by_unit: dict[str, UsageSummary] = Field(default_factory=dict)

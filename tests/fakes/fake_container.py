@@ -5,12 +5,14 @@ from __future__ import annotations
 from functools import cached_property
 from pathlib import Path
 
+from medquiz_generator.application.context import RunContext
 from medquiz_generator.composition.container import Container
 from medquiz_generator.config.settings import Settings
 from medquiz_generator.domain.models import StructuredDocument
 from medquiz_generator.domain.ports import (
     DocumentParser,
     EmbeddingProvider,
+    FigureTriage,
     QuestionGenerator,
     QuestionJudge,
     StyleJudge,
@@ -20,6 +22,7 @@ from medquiz_generator.domain.ports import (
 from medquiz_generator.domain.usage import ModelPrice, StaticPricingTable
 from tests.fakes.fake_llm import (
     FakeEmbeddings,
+    FakeFigureTriage,
     FakeGenerator,
     FakeJudge,
     FakeStyleJudge,
@@ -74,6 +77,9 @@ class FakeContainer(Container):
 
     def style_judge(self, tracker: UsageTracker) -> StyleJudge:
         return FakeStyleJudge()
+
+    def figure_triage(self, tracker: UsageTracker, ctx: RunContext | None = None) -> FigureTriage:
+        return FakeFigureTriage(tracker)
 
     def embedding_provider(self, tracker: UsageTracker) -> EmbeddingProvider:
         return FakeEmbeddings(tracker=tracker)

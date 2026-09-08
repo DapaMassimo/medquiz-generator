@@ -9,17 +9,20 @@ from __future__ import annotations
 import re
 from dataclasses import dataclass, field
 
-from medquiz_generator.domain.models import Section
+from medquiz_generator.domain.models import FigureRef, Section
 
 _WS = re.compile(r"[ \t]+")
 
 
 @dataclass(frozen=True)
 class OutlineItem:
-    kind: str  # "heading" | "text"
-    text: str
+    kind: str  # "heading" | "text" | "figure"
+    text: str  # heading/paragraph text, or the caption for a figure
     page: int
     level: int = 0  # headings only
+    ref: str = ""  # figures only: path of the saved image, relative to the run directory
+    width: int = 0
+    height: int = 0
 
 
 @dataclass
@@ -74,7 +77,13 @@ def infer_levels_from_case(items: list[OutlineItem]) -> list[OutlineItem]:
 
 
 def build_sections(items: list[OutlineItem], *, root_title: str) -> list[Section]:
-    """Build the section list in document order.
+    return build_outline(items, root_title=root_title)[0]
+
+
+def build_outline(
+    items: list[OutlineItem], *, root_title: str
+) -> tuple[list[Section], list[FigureRef]]:
+    """Build the section list (and the figures, attached to the section they appear in).
 
     * Text before the first heading goes into a level-0 root section titled ``root_title``
       (only emitted if it has text).
@@ -89,6 +98,7 @@ def build_sections(items: list[OutlineItem], *, root_title: str) -> list[Section
     nodes: list[_Node] = [root]
     stack: list[_Node] = [root]
     first_page_seen = False
+    figure_nodes: list[tuple[_Node, OutlineItem]] = []
 
     for item in items:
         page = max(1, item.page)
@@ -110,6 +120,9 @@ def build_sections(items: list[OutlineItem], *, root_title: str) -> list[Section
             nodes.append(node)
             stack.append(node)
             continue
+        if item.kind == "figure":
+            figure_nodes.append((stack[-1], item))
+            continue
         text = _clean(item.text)
         if not text:
             continue
@@ -119,8 +132,9 @@ def build_sections(items: list[OutlineItem], *, root_title: str) -> list[Section
 
     sections: list[Section] = []
     id_by_node: dict[int, str] = {}
+    root_has_figures = any(node is root for node, _ in figure_nodes)
     for index, node in enumerate(nodes):
-        if node is root and not node.paragraphs:
+        if node is root and not node.paragraphs and not root_has_figures:
             continue
         section_id = f"s{index:03d}"
         id_by_node[id(node)] = section_id
@@ -137,4 +151,16 @@ def build_sections(items: list[OutlineItem], *, root_title: str) -> list[Section
                 text="\n\n".join(node.paragraphs),
             )
         )
-    return sections
+    figures = [
+        FigureRef(
+            id=f"f{index:03d}",
+            page=max(1, item.page),
+            section_id=id_by_node.get(id(node), sections[0].id if sections else "s000"),
+            caption=_clean(item.text),
+            path=item.ref,
+            width=item.width,
+            height=item.height,
+        )
+        for index, (node, item) in enumerate(figure_nodes, start=1)
+    ]
+    return sections, figures

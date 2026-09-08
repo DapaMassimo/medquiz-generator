@@ -18,6 +18,7 @@ from medquiz_generator.adapters.embeddings.langchain_embeddings import (
 from medquiz_generator.adapters.export.json_exporter import JsonExporter
 from medquiz_generator.adapters.export.xlsx_exporter import XlsxExporter
 from medquiz_generator.adapters.llm.adapters import (
+    LangChainFigureTriage,
     LangChainQuestionGenerator,
     LangChainQuestionJudge,
     LangChainStyleJudge,
@@ -39,6 +40,7 @@ from medquiz_generator.application.example_selection import (
 )
 from medquiz_generator.application.examples import load_ssm_examples
 from medquiz_generator.application.export import ExportStage
+from medquiz_generator.application.figures import FiguresStage
 from medquiz_generator.application.generate import GenerateStage
 from medquiz_generator.application.parse import ParseStage
 from medquiz_generator.application.pipeline import Pipeline, Stages
@@ -48,11 +50,12 @@ from medquiz_generator.application.review import ReviewService
 from medquiz_generator.application.verify import VerifyStage
 from medquiz_generator.config.pricing import load_pricing
 from medquiz_generator.config.settings import Settings
-from medquiz_generator.domain.models import SsmExample
+from medquiz_generator.domain.models import SsmExample, StructuredDocument
 from medquiz_generator.domain.ports import (
     DocumentParser,
     EmbeddingProvider,
     ExampleSelector,
+    FigureTriage,
     QuestionGenerator,
     QuestionJudge,
     StyleJudge,
@@ -121,6 +124,7 @@ class Container:
             artifacts_path=Path(s.docling_artifacts_path) if s.docling_artifacts_path else None,
             do_ocr=s.docling_do_ocr,
             ocr_engine=s.docling_ocr_engine,
+            min_figure_side=s.images_min_side_px,
         )
 
     def _api_key(self) -> str:
@@ -190,7 +194,19 @@ class Container:
     # ------------------------------------------------------------------ stages
 
     def parse_stage(self) -> ParseStage:
-        return ParseStage(self.parser())
+        return ParseStage(self.parser(), extract_figures=self.settings.images_enabled)
+
+    def figure_triage(self, tracker: UsageTracker, ctx: RunContext | None = None) -> FigureTriage:
+        context: dict[str, str] = {}
+        if ctx is not None and ctx.store.exists(ctx.run_id, artifacts.DOCUMENT):
+            document = ctx.store.load(ctx.run_id, artifacts.DOCUMENT, StructuredDocument)
+            context = {s.id: s.text for s in document.sections}
+        return LangChainFigureTriage(
+            self.structured_llm(self.settings.vision_model, tracker), context
+        )
+
+    def figures_stage(self, ctx: RunContext) -> FiguresStage:
+        return FiguresStage(self.figure_triage(ctx.tracker, ctx))
 
     def plan_stage(self) -> PlanStage:
         configured = self.settings.plan_min_unit_chars
@@ -237,6 +253,7 @@ class Container:
         return Pipeline(
             Stages(
                 parse=self.parse_stage(),
+                figures=self.figures_stage(ctx) if self.settings.images_enabled else None,
                 plan=self.plan_stage(),
                 classify=self.classify_stage(ctx),
                 generate=self.generate_stage(ctx),

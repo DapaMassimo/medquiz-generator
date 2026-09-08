@@ -110,6 +110,28 @@ def parse(
 
 
 @app.command()
+def figures(run_id: RunIdOption = None) -> None:
+    """Triage the figures extracted by parse (needs MQ_IMAGES_ENABLED=true at parse time)."""
+    c = container()
+    ctx = c.context(resolve_run_id(run_id))
+
+    def go() -> None:
+        catalog = c.figures_stage(ctx).run(ctx)
+        for figure in catalog.figures:
+            mark = "*" if figure.question_worthy else " "
+            typer.echo(
+                f"{mark} {figure.id} p{figure.page} {figure.kind:14s} {figure.section_id} "
+                f"{figure.caption[:60]}"
+            )
+        typer.echo(
+            f"{len(catalog.figures)} figures, "
+            f"{sum(1 for f in catalog.figures if f.question_worthy)} question-worthy"
+        )
+
+    _guard(go)
+
+
+@app.command()
 def plan(
     total_questions: TotalOption,
     run_id: RunIdOption = None,

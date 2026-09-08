@@ -16,6 +16,10 @@ class FakeParser:
     def name(self) -> str:
         return "fake-parser"
 
-    def parse(self, pdf_path: Path, *, use_cache: bool = True) -> StructuredDocument:
+    def parse(
+        self, pdf_path: Path, *, use_cache: bool = True, assets_dir: Path | None = None
+    ) -> StructuredDocument:
         self.calls.append((pdf_path, use_cache))
+        self.assets_dirs: list[Path | None] = getattr(self, "assets_dirs", [])
+        self.assets_dirs.append(assets_dir)
         return self._document.model_copy(update={"source_path": str(pdf_path)})

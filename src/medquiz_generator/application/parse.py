@@ -11,12 +11,18 @@ from medquiz_generator.domain.ports import DocumentParser
 
 
 class ParseStage:
-    def __init__(self, parser: DocumentParser) -> None:
+    def __init__(self, parser: DocumentParser, *, extract_figures: bool = False) -> None:
         self._parser = parser
+        self._extract_figures = extract_figures
 
     def run(self, ctx: RunContext, pdf_path: Path, *, use_cache: bool = True) -> StructuredDocument:
         with ctx.stage(Stage.PARSE):
-            document = self._parser.parse(pdf_path, use_cache=use_cache)
+            assets_dir = (
+                ctx.store.run_dir(ctx.run_id) / artifacts.FIGURES_DIR
+                if self._extract_figures
+                else None
+            )
+            document = self._parser.parse(pdf_path, use_cache=use_cache, assets_dir=assets_dir)
             ctx.store.save(ctx.run_id, artifacts.DOCUMENT, document)
             ctx.update_meta(
                 source_path=str(pdf_path),
@@ -28,6 +34,7 @@ class ParseStage:
                 sections=len(document.sections),
                 pages=document.page_count,
                 chars=document.total_chars,
+                figures=len(document.figures),
                 content_hash=document.content_hash[:12],
             )
         return document
