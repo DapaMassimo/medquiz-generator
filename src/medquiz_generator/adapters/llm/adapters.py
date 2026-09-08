@@ -89,11 +89,49 @@ class LangChainQuestionJudge:
     def model_name(self) -> str:
         return self._llm.model_name
 
-    def judge(self, item: QuizItem, passage: str) -> JudgeVerdict:
+    def judge(self, item: QuizItem, passage: str, image: bytes | None = None) -> JudgeVerdict:
         wire = self._llm.invoke(
-            prompts.JUDGE_SYSTEM, prompts.judge_user_prompt(item, passage), prompts.WireVerdict
+            prompts.JUDGE_SYSTEM,
+            prompts.judge_user_prompt(item, passage),
+            prompts.WireVerdict,
+            images=[image] if image else None,
         )
         return derive_verdict(wire, item.correct_option_id)
+
+
+class LangChainImageQuestionGenerator:
+    def __init__(self, llm: StructuredLLM) -> None:
+        self._llm = llm
+
+    @property
+    def model_name(self) -> str:
+        return self._llm.model_name
+
+    def generate(
+        self,
+        figure: FigureRef,
+        image: bytes,
+        section: Section,
+        examples: list[SsmExample],
+        label: SectionLabel | None,
+    ) -> GeneratedBatch:
+        wire = self._llm.invoke(
+            prompts.IMAGE_GENERATION_SYSTEM,
+            prompts.image_generation_user_prompt(figure, section, examples, label),
+            prompts.WireQuestion,
+            images=[image],
+        )
+        question = GeneratedQuestion(
+            question=wire.question,
+            options=[Option(id=o.id, text=clean_option_text(o.text)) for o in wire.options],
+            correct_option_id=wire.correct_option_id,
+            explanation=wire.explanation,
+            difficulty=Difficulty(wire.difficulty),
+            quote=wire.quote,
+            page=wire.page,
+            style=QuestionStyle(wire.style),
+        )
+        return GeneratedBatch(questions=[question])
 
 
 def derive_verdict(wire: prompts.WireVerdict, marked: str) -> JudgeVerdict:

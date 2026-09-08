@@ -13,6 +13,7 @@ from medquiz_generator.domain.ports import (
     DocumentParser,
     EmbeddingProvider,
     FigureTriage,
+    ImageQuestionGenerator,
     QuestionGenerator,
     QuestionJudge,
     StyleJudge,
@@ -24,6 +25,7 @@ from tests.fakes.fake_llm import (
     FakeEmbeddings,
     FakeFigureTriage,
     FakeGenerator,
+    FakeImageQuestionGenerator,
     FakeJudge,
     FakeStyleJudge,
     FakeTaxonomyBuilder,
@@ -80,6 +82,11 @@ class FakeContainer(Container):
 
     def figure_triage(self, tracker: UsageTracker, ctx: RunContext | None = None) -> FigureTriage:
         return FakeFigureTriage(tracker)
+
+    def image_generator(self, tracker: UsageTracker) -> ImageQuestionGenerator | None:
+        if not self.settings.images_enabled:
+            return None
+        return FakeImageQuestionGenerator(tracker)
 
     def embedding_provider(self, tracker: UsageTracker) -> EmbeddingProvider:
         return FakeEmbeddings(tracker=tracker)

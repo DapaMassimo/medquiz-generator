@@ -71,6 +71,8 @@ class Settings(BaseSettings):
     images_enabled: bool = False
     images_min_side_px: int = 80
     vision_model: str = "gpt-4.1"
+    # Image questions never reach "verified" on their own: a reviewer must confirm them.
+    image_questions_require_review: bool = True
     # 'random' = k drawn from the whole pool, seeded by the section so re-runs reproduce;
     # 'first' = the first N of the file, the same for every unit; 'semantic' = closest to the
     # section by embedding, used only when the pool is larger than max_examples_in_prompt.

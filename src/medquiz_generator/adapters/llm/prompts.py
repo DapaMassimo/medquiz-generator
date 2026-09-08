@@ -13,6 +13,7 @@ from pydantic import BaseModel, Field
 
 from medquiz_generator.application.examples import format_examples
 from medquiz_generator.domain.models import (
+    FigureRef,
     PlanUnit,
     QuizItem,
     Section,
@@ -218,7 +219,14 @@ def judge_user_prompt(item: QuizItem, passage: str) -> str:
         f"### Options\n{options}\n\n"
         f"### Marked correct option\n{item.correct_option_id}: {marked}\n\n"
         f"### Explanation given with the question\n{item.explanation}\n\n"
-        "Evaluate and return the structured verdict."
+        + (
+            "### Figure\nThe question is about the attached figure "
+            f"({item.image.caption or item.image.figure_id}); judge visual claims against it "
+            "and textual claims against the passage.\n\n"
+            if item.image is not None
+            else ""
+        )
+        + "Evaluate and return the structured verdict."
     )
 
 
@@ -298,6 +306,54 @@ def figure_triage_user_prompt(caption: str, context: str) -> str:
         f"### Surrounding text\n{context[:1200]}\n\n"
         "Classify the attached figure and return the structured assessment."
     )
+
+
+# ---------------------------------------------------------------- image questions
+
+IMAGE_GENERATION_SYSTEM = """You write ONE multiple-choice question for the Italian SSM exam
+about the attached clinical figure (ECG, imaging, histology, clinical photo) taken from a
+medical textbook. The same hard rules as for text questions apply: exactly 5 options A-E, one
+correct, plausible but unequivocally wrong distractors, Italian, SSM register, an explanation
+of 2-4 sentences, a literal `quote` copied from the section text (the caption or a sentence
+that describes the figure) supporting the answer, and the figure's page number.
+
+Specific rules:
+- The question must require looking at the figure ("Osservando il tracciato…", "L'immagine
+  mostra…"); a question answerable from the text alone is not acceptable.
+- Only claim what is visible in the figure AND consistent with the caption and the section
+  text. Do not read values that cannot be read from the image.
+- Use the clinical context of the section for the vignette, never outside knowledge.
+Output only the structured object."""
+
+
+def image_generation_user_prompt(
+    figure: FigureRef,
+    section: Section,
+    examples: list[SsmExample],
+    label: SectionLabel | None,
+) -> str:
+    parts: list[str] = []
+    if examples:
+        parts.append(
+            "### Example questions from real SSM exams (style reference only):\n\n"
+            + format_examples(examples)
+        )
+    meta = [f"Figure: {figure.caption or figure.id} (page {figure.page})"]
+    if figure.description:
+        meta.append(f"Figure description: {figure.description}")
+    if label is not None:
+        meta.append(f"Subject: {label.subject} — Topic: {label.topic}")
+    parts.append("### Figure metadata\n" + "\n".join(meta))
+    parts.append(
+        f"### Section text (the ONLY allowed textual source)\n\n"
+        f"[Section: {section.path_str} | pages {section.page_start}-{section.page_end}]\n"
+        f"{section.text}"
+    )
+    parts.append(
+        "### Task\nWrite exactly 1 question in Italian about the attached figure, style "
+        "vignetta. Return it in the structured format."
+    )
+    return "\n\n".join(parts)
 
 
 # -------------------------------------------------------------------- style judge

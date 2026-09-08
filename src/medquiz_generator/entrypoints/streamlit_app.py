@@ -196,9 +196,21 @@ def simulator_tab(items: list[QuizItem], document: StructuredDocument | None) ->
                 render_question(item, answers, document, key=f"list-{item.id}")
 
 
+def figure_block(item: QuizItem) -> None:
+    if item.image is None:
+        return
+    container = get_container()
+    path = container.store.run_dir(item.model_metadata.run_id) / item.image.path
+    if path.exists():
+        st.image(str(path), caption=item.image.caption or item.image.figure_id)
+    else:
+        st.warning(f"Immagine non trovata: {item.image.path}")
+
+
 def render_question(
     item: QuizItem, answers: dict[str, str], document: StructuredDocument | None, *, key: str
 ) -> None:
+    figure_block(item)
     st.markdown(f"**{item.question}**")
     choice = st.radio(
         "Risposta",
@@ -262,6 +274,7 @@ def review_tab(
     item = next(i for i in filtered if i.id == selected_id)
     left, right = st.columns(2)
     with left:
+        figure_block(item)
         st.markdown(f"**{item.question}**")
         for option in item.options:
             marker = "✅" if option.id == item.correct_option_id else "▫️"

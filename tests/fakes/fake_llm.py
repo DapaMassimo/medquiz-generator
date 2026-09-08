@@ -118,8 +118,11 @@ class FakeJudge:
     def model_name(self) -> str:
         return "fake-judge"
 
-    def judge(self, item: QuizItem, passage: str) -> JudgeVerdict:
+    def judge(self, item: QuizItem, passage: str, image: bytes | None = None) -> JudgeVerdict:
         self.calls.append(item.id)
+        self.images_seen: list[str] = getattr(self, "images_seen", [])
+        if image is not None:
+            self.images_seen.append(item.id)
         if self._tracker is not None:
             self._tracker.record(
                 UsageRecord(
@@ -215,6 +218,50 @@ class FakeFigureTriage:
             description=f"figura {figure.id}",
             question_worthy=clinical,
             reason="fake triage",
+        )
+
+
+class FakeImageQuestionGenerator:
+    def __init__(self, tracker: UsageTracker | None = None) -> None:
+        self._tracker = tracker
+        self.calls: list[str] = []
+
+    @property
+    def model_name(self) -> str:
+        return "fake-vision-generator"
+
+    def generate(
+        self,
+        figure: FigureRef,
+        image: bytes,
+        section: Section,
+        examples: list[SsmExample],
+        label: SectionLabel | None,
+    ) -> GeneratedBatch:
+        self.calls.append(figure.id)
+        if self._tracker is not None:
+            self._tracker.record(
+                UsageRecord(
+                    run_id="",
+                    stage="",
+                    model="fake-vision-generator",
+                    input_tokens=1500,
+                    output_tokens=250,
+                )
+            )
+        return GeneratedBatch(
+            questions=[
+                GeneratedQuestion(
+                    question=f"Osservando la figura ({figure.caption}), quale reperto è presente?",
+                    options=[Option(id=oid, text=f"Reperto {oid}") for oid in OPTION_IDS],
+                    correct_option_id="A",
+                    explanation=f"La figura mostra il reperto descritto in {section.title}.",
+                    difficulty=Difficulty.MEDIA,
+                    quote=first_sentence(section.text),
+                    page=figure.page,
+                    style=QuestionStyle.VIGNETTA,
+                )
+            ]
         )
 
 

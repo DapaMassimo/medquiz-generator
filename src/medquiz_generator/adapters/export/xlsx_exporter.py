@@ -34,6 +34,7 @@ HEADERS = [
     "motivo",
     "modello",
     "run id",
+    "immagine",
 ]
 
 WIDTHS = {
@@ -71,6 +72,7 @@ def row_of(item: QuizItem) -> list[object]:
         item.status.reason,
         item.model_metadata.model,
         item.model_metadata.run_id,
+        item.image.path if item.image is not None else "",
     ]
 
 

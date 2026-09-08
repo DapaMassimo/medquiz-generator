@@ -88,7 +88,26 @@ class QuestionJudge(Protocol):
     @property
     def model_name(self) -> str: ...
 
-    def judge(self, item: QuizItem, passage: str) -> JudgeVerdict: ...
+    def judge(self, item: QuizItem, passage: str, image: bytes | None = None) -> JudgeVerdict:
+        """``image`` (PNG bytes) is given for image questions so the judge can look at the
+        figure the question is about."""
+        ...
+
+
+class ImageQuestionGenerator(Protocol):
+    """Generates one question that requires interpreting a clinical figure."""
+
+    @property
+    def model_name(self) -> str: ...
+
+    def generate(
+        self,
+        figure: FigureRef,
+        image: bytes,
+        section: Section,
+        examples: list[SsmExample],
+        label: SectionLabel | None,
+    ) -> GeneratedBatch: ...
 
 
 class StyleJudge(Protocol):

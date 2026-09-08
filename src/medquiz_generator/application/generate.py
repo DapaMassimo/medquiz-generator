@@ -13,8 +13,11 @@ from medquiz_generator.application import artifacts
 from medquiz_generator.application.context import RunContext
 from medquiz_generator.domain.models import (
     OPTION_IDS,
+    FigureCatalog,
+    FigureRef,
     GeneratedQuestion,
     GenerationPlan,
+    ImageRef,
     ModelMetadata,
     Option,
     PlanUnit,
@@ -27,7 +30,11 @@ from medquiz_generator.domain.models import (
     StructuredDocument,
     Taxonomy,
 )
-from medquiz_generator.domain.ports import ExampleSelector, QuestionGenerator
+from medquiz_generator.domain.ports import (
+    ExampleSelector,
+    ImageQuestionGenerator,
+    QuestionGenerator,
+)
 from medquiz_generator.domain.text import contains_normalized
 
 
@@ -120,11 +127,13 @@ class GenerateStage:
         *,
         max_examples: int = 5,
         selector: ExampleSelector | None = None,
+        image_generator: ImageQuestionGenerator | None = None,
     ) -> None:
         self._generator = generator
         self._examples = list(examples)
         self._max_examples = max_examples
         self._selector = selector
+        self._image_generator = image_generator
 
     def examples_for(self, sections: list[Section]) -> list[SsmExample]:
         """Few-shot examples for a unit: selector-driven when configured, else the first N."""
@@ -183,7 +192,76 @@ class GenerateStage:
                     produced=len(new_items),
                     examples=[e.number for e in examples],
                 )
+            if self._image_generator is not None:
+                items = self._generate_image_questions(ctx, document, taxonomy, items)
             ctx.tracker.set_context()
             ctx.store.save_list(ctx.run_id, artifacts.QUESTIONS_GENERATED, list(items))
             ctx.log("generation finished", items=len(items), model=self._generator.model_name)
         return items
+
+    def _generate_image_questions(
+        self,
+        ctx: RunContext,
+        document: StructuredDocument,
+        taxonomy: Taxonomy,
+        items: list[QuizItem],
+    ) -> list[QuizItem]:
+        """One question per question-worthy figure (figures.json), on top of the plan."""
+        assert self._image_generator is not None
+        if not ctx.store.exists(ctx.run_id, artifacts.FIGURES):
+            return items
+        catalog = ctx.store.load(ctx.run_id, artifacts.FIGURES, FigureCatalog)
+        done = {i.image.figure_id for i in items if i.image is not None}
+        run_dir = ctx.store.run_dir(ctx.run_id)
+        for figure in catalog.figures:
+            if not figure.question_worthy or figure.id in done:
+                continue
+            section = document.section_by_id(figure.section_id)
+            image_path = run_dir / figure.path
+            if section is None or not image_path.exists():
+                ctx.warn("figure skipped: section or image missing", figure_id=figure.id)
+                continue
+            label = taxonomy.label_for(section.id)
+            ctx.tracker.set_context(unit_id=figure.section_id, item_id=f"fig-{figure.id}")
+            batch = self._image_generator.generate(
+                figure, image_path.read_bytes(), section, self.examples_for([section]), label
+            )
+            for index, question in enumerate(batch.questions, start=1):
+                item = to_quiz_item(
+                    question,
+                    item_id=f"fig-{figure.id}-q{index:02d}",
+                    unit=_figure_unit(figure, section),
+                    sections=[section],
+                    label=label,
+                    model=self._image_generator.model_name,
+                    run_id=ctx.run_id,
+                )
+                items.append(
+                    item.model_copy(
+                        update={
+                            "image": ImageRef(
+                                figure_id=figure.id,
+                                path=figure.path,
+                                caption=figure.caption,
+                                page=figure.page,
+                            )
+                        }
+                    )
+                )
+            ctx.store.save_list(ctx.run_id, artifacts.QUESTIONS_GENERATED, list(items))
+            ctx.log("figure question generated", figure_id=figure.id, produced=len(batch.questions))
+        return items
+
+
+def _figure_unit(figure: FigureRef, section: Section) -> PlanUnit:
+    """A synthetic unit so image questions carry a unit id like the others."""
+    return PlanUnit(
+        id=f"fig-{figure.id}",
+        title=figure.caption or section.title,
+        section_ids=[section.id],
+        page_start=figure.page,
+        page_end=figure.page,
+        char_count=section.char_count,
+        weight=0.0,
+        questions=1,
+    )

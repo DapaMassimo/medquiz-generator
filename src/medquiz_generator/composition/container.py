@@ -19,6 +19,7 @@ from medquiz_generator.adapters.export.json_exporter import JsonExporter
 from medquiz_generator.adapters.export.xlsx_exporter import XlsxExporter
 from medquiz_generator.adapters.llm.adapters import (
     LangChainFigureTriage,
+    LangChainImageQuestionGenerator,
     LangChainQuestionGenerator,
     LangChainQuestionJudge,
     LangChainStyleJudge,
@@ -56,6 +57,7 @@ from medquiz_generator.domain.ports import (
     EmbeddingProvider,
     ExampleSelector,
     FigureTriage,
+    ImageQuestionGenerator,
     QuestionGenerator,
     QuestionJudge,
     StyleJudge,
@@ -218,16 +220,27 @@ class Container:
     def classify_stage(self, ctx: RunContext) -> ClassifyStage:
         return ClassifyStage(self.taxonomy_builder(ctx.tracker))
 
+    def image_generator(self, tracker: UsageTracker) -> ImageQuestionGenerator | None:
+        if not self.settings.images_enabled:
+            return None
+        return LangChainImageQuestionGenerator(
+            self.structured_llm(self.settings.vision_model, tracker)
+        )
+
     def generate_stage(self, ctx: RunContext) -> GenerateStage:
         return GenerateStage(
             self.generator(ctx.tracker),
             self.examples,
             max_examples=self.settings.max_examples_in_prompt,
             selector=self.example_selector(ctx.tracker),
+            image_generator=self.image_generator(ctx.tracker),
         )
 
     def verify_stage(self, ctx: RunContext) -> VerifyStage:
-        return VerifyStage(self.judge(ctx.tracker))
+        return VerifyStage(
+            self.judge(ctx.tracker),
+            image_questions_require_review=self.settings.image_questions_require_review,
+        )
 
     def dedup_stage(self, ctx: RunContext) -> DedupStage:
         return DedupStage(self.embeddings(ctx.tracker), threshold=self.settings.dedup_threshold)

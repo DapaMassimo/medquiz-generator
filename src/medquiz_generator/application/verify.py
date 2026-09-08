@@ -96,17 +96,26 @@ def combine(failures: list[str], judge: JudgeVerdict | None) -> tuple[QuestionSt
 
 
 class VerifyStage:
-    def __init__(self, judge: QuestionJudge | None) -> None:
+    def __init__(
+        self, judge: QuestionJudge | None, *, image_questions_require_review: bool = True
+    ) -> None:
         self._judge = judge
+        self._image_review = image_questions_require_review
 
-    def verify_item(self, item: QuizItem, document: StructuredDocument) -> VerificationRecord:
+    def verify_item(
+        self, item: QuizItem, document: StructuredDocument, image: bytes | None = None
+    ) -> VerificationRecord:
         failures = deterministic_checks(item, document)
         verdict: JudgeVerdict | None = None
         if self._judge is not None and not any(f in HARD_FAILURES for f in failures):
             section = document.section_by_id(item.source.section_id)
             passage = excerpt_around(section.text if section else "", item.source.quote)
-            verdict = self._judge.judge(item, passage)
+            verdict = self._judge.judge(item, passage, image)
         status, reason = combine(failures, verdict)
+        if item.image is not None and self._image_review and status == QuestionStatus.VERIFIED:
+            # Visual claims cannot be checked against the text: a human must confirm them.
+            status = QuestionStatus.FLAGGED
+            reason = "image question: human review required; " + reason
         return VerificationRecord(
             item_id=item.id,
             deterministic_failures=failures,
@@ -144,7 +153,11 @@ class VerifyStage:
                         records.append(previous_records[item.id])
                     continue
                 ctx.tracker.set_context(unit_id=item.model_metadata.unit_id, item_id=item.id)
-                record = self.verify_item(item, document)
+                image: bytes | None = None
+                if item.image is not None:
+                    image_path = ctx.store.run_dir(ctx.run_id) / item.image.path
+                    image = image_path.read_bytes() if image_path.exists() else None
+                record = self.verify_item(item, document, image)
                 records.append(record)
                 verified.append(
                     item.with_status(

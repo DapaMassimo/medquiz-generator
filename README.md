@@ -246,6 +246,27 @@ report aggregation, review/promotion, eval comparison, the CLI and the full pipe
 - **Provided taxonomy**: `TaxonomyBuilder` is a port; a builder fed by a client-supplied
   taxonomy can replace the extracted one without touching the pipeline (not implemented).
 
+## Image questions (opt-in)
+
+With `MQ_IMAGES_ENABLED=true` the parse stage saves every figure of the PDF as
+`runs/<run_id>/assets/figures/fNNN.png` (icons skipped) and the `figures` stage asks a
+vision model (`MQ_VISION_MODEL`) to classify each one. Only **clinical images** (ECG,
+radiology, ultrasound, histology, endoscopy, clinical photos) are `question_worthy`;
+schematics, charts, tables-as-images and icons never are. For each question-worthy figure
+`generate` adds one question that requires interpreting the image (on top of the plan), the
+judge sees the image, and — since visual claims cannot be checked against the text — the
+question is delivered as **flagged** until a reviewer approves it in the UI
+(`MQ_IMAGE_QUESTIONS_REQUIRE_REVIEW`). Exports carry the image path; the UI shows the figure.
+
+## Open points
+
+- **Rights on figures**: image questions reuse the publisher's figures; confirm that the
+  client holds the rights before delivering them.
+- **Chapters without clinical images** (e.g. the hypertension chapter used for development:
+  9 diagrams/charts, 0 clinical images) yield no image questions by design.
+- **Explanations vs source**: the judge flags explanations that add facts absent from the
+  passage; whether to trim them or accept them is a reviewer decision.
+
 ## Out of scope (possible evolutions)
 
 Image-based questions, a user platform with accounts, payments, and e-learning/LMS integration
