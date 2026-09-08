@@ -14,6 +14,7 @@ from medquiz_generator.domain.models import (
     JudgeVerdict,
     Option,
     PlanUnit,
+    QuestionStyle,
     QuizItem,
     Section,
     SectionLabel,
@@ -67,6 +68,7 @@ class LangChainQuestionGenerator:
                 difficulty=Difficulty(q.difficulty),
                 quote=q.quote,
                 page=q.page,
+                style=QuestionStyle(q.style),
             )
             for q in batch.questions
         ]

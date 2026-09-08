@@ -144,6 +144,7 @@ def test_generator_adapter_maps_wire_batch(fixture_document: StructuredDocument)
         char_count=len(section.text),
         weight=0.2,
         questions=1,
+        styles={"nozionistica": 1},
     )
     wire = prompts.WireBatch(
         questions=[
@@ -158,6 +159,7 @@ def test_generator_adapter_maps_wire_batch(fixture_document: StructuredDocument)
                 difficulty="difficile",
                 quote="La diagnosi richiede misurazioni ripetute",
                 page=2,
+                style="nozionistica",
             )
         ]
     )
@@ -169,12 +171,13 @@ def test_generator_adapter_maps_wire_batch(fixture_document: StructuredDocument)
     [question] = batch.questions
     assert question.correct_option_id == "B" and question.difficulty == "difficile"
     assert question.page == 2 and question.options[4].id == "E"
+    assert question.style == "nozionistica"
     assert question.options[1].text == "opt B"  # copied answer marker stripped
     # The prompt carries the section text and the few-shot examples.
     messages = llm._model.runnable.invocations[0]  # type: ignore[attr-defined]
     user_prompt = messages[1].content
     assert section.text in user_prompt and "Domanda 1" in user_prompt
-    assert "exactly 1 question" in user_prompt
+    assert "exactly 1 question" in user_prompt and "Styles: 1 nozionistica" in user_prompt
 
 
 def test_judge_and_style_and_taxonomy_adapters(fixture_document: StructuredDocument) -> None:

@@ -33,6 +33,7 @@ def render_plan(plan: GenerationPlan) -> str:
             str(u.char_count),
             f"{u.weight:.1%}",
             str(u.questions),
+            " ".join(f"{k[:3]}={v}" for k, v in u.styles.items()),
             u.note,
         ]
         for u in plan.units
@@ -43,7 +44,9 @@ def render_plan(plan: GenerationPlan) -> str:
         f"questions over {len(plan.units)} units, merge threshold {plan.min_unit_chars} chars "
         f"({mode}); {len(plan.skipped_section_ids)} sections skipped as noise\n"
     )
-    return header + _table(["unit", "title", "pages", "chars", "weight", "q", "note"], rows)
+    return header + _table(
+        ["unit", "title", "pages", "chars", "weight", "q", "styles", "note"], rows
+    )
 
 
 def render_taxonomy(taxonomy: Taxonomy) -> str:
@@ -67,6 +70,13 @@ def render_report(report: RunReport) -> str:
         f"{report.flagged}  discarded: {report.discarded}  exported: {report.exported}  "
         f"duplicates: {report.duplicates}",
     ]
+    if report.styles_requested or report.styles_delivered:
+        lines.append(
+            "Styles requested: "
+            + ", ".join(f"{k}={v}" for k, v in report.styles_requested.items())
+            + " | delivered: "
+            + ", ".join(f"{k}={v}" for k, v in report.styles_delivered.items())
+        )
     if report.deterministic_failures:
         lines.append(
             "Deterministic failures: "

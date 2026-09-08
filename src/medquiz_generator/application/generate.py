@@ -98,6 +98,7 @@ def to_quiz_item(
         correct_option_id=question.correct_option_id,
         explanation=question.explanation.strip(),
         difficulty=question.difficulty,
+        style=question.style,
         source=SourceRef(
             section_id=section.id,
             section_title=section.title,

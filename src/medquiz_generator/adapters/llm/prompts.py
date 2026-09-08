@@ -42,6 +42,10 @@ class WireQuestion(BaseModel):
         "che sostiene la risposta corretta (max 60 parole)"
     )
     page: int = Field(description="Pagina del documento da cui proviene la citazione")
+    style: Literal["vignetta", "nozionistica"] = Field(
+        description="vignetta = breve caso clinico seguito dalla domanda; "
+        "nozionistica = domanda diretta sul concetto"
+    )
 
 
 class WireBatch(BaseModel):
@@ -121,11 +125,14 @@ Hard rules — violating any of them makes the question unusable:
 3. Distractors must be plausible but unequivocally wrong according to the section text: build
    them from typical errors and from neighbouring concepts that appear in the same material
    (other values, other classes, other conditions mentioned nearby).
-4. Style: SSM register. When the content allows it, open with a short clinical vignette
-   followed by a precise question; otherwise ask a direct, factual question in the same formal
-   register. One question = one concept. Vary the vignette (age, sex, setting, presenting
-   complaint): do not reuse the ages or the openings of the example questions, and never copy
-   their answer markers into the option texts.
+4. Style: SSM register. Two registers exist and the task states how many questions of each
+   to write: "vignetta" opens with a short clinical case (age, sex, presentation, one finding)
+   followed by a precise question; "nozionistica" is a direct, factual question on the concept
+   in the same formal register. Honour the requested counts; only when the text really cannot
+   support a clinical case (pure epidemiology, definitions) write a factual question instead
+   and label it accordingly. One question = one concept. Vary the vignette (age, sex, setting,
+   presenting complaint): do not reuse the ages or the openings of the example questions, and
+   never copy their answer markers into the option texts.
 5. `quote`: a literal, contiguous excerpt copied verbatim from the section text (max 60 words)
    that supports the correct answer. Do not paraphrase, do not merge distant sentences.
 6. `page`: the page number of the quote, within the page range given for the section.
@@ -163,8 +170,10 @@ def generation_user_prompt(
             f"{section.text}"
         )
     parts.append("### Section text (the ONLY allowed source)\n\n" + "\n\n".join(body))
+    wanted = ", ".join(f"{count} {style}" for style, count in unit.styles.items() if count)
+    styles_line = f" Styles: {wanted}." if wanted else ""
     parts.append(
-        f"### Task\nWrite exactly {n} question(s) in Italian following the rules. "
+        f"### Task\nWrite exactly {n} question(s) in Italian following the rules.{styles_line} "
         "Return them in the structured format."
     )
     return "\n\n".join(parts)

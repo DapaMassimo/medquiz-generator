@@ -14,6 +14,7 @@ from medquiz_generator.domain.models import (
     JudgeVerdict,
     Option,
     PlanUnit,
+    QuestionStyle,
     QuizItem,
     Section,
     SectionLabel,
@@ -93,6 +94,7 @@ class FakeGenerator:
                 difficulty=Difficulty.MEDIA,
                 quote=first_sentence(section.text),
                 page=section.page_start,
+                style=QuestionStyle.VIGNETTA if k % 2 == 0 else QuestionStyle.NOZIONISTICA,
             )
             if self._mutate is not None:
                 question = self._mutate(question, k)

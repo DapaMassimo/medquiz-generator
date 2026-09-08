@@ -60,8 +60,11 @@ def build_run_report(ctx: RunContext) -> RunReport:
 
     units_planned = 0
     sections_total = 0
+    styles_requested: Counter[str] = Counter()
     if ctx.store.exists(ctx.run_id, artifacts.PLAN):
         plan = ctx.store.load(ctx.run_id, artifacts.PLAN, GenerationPlan)
+        for unit in plan.units:
+            styles_requested.update(unit.styles)
         units_planned = sum(1 for u in plan.units if u.questions > 0)
         sections_total = sum(len(u.section_ids) for u in plan.units if u.questions > 0)
     elif ctx.store.exists(ctx.run_id, artifacts.DOCUMENT):
@@ -113,6 +116,8 @@ def build_run_report(ctx: RunContext) -> RunReport:
         deterministic_failures=dict(deterministic),
         judge_verdicts=dict(judge_verdicts),
         duplicates=duplicates,
+        styles_requested=styles_requested,
+        styles_delivered=dict(Counter(i.style.value for i in delivered)),
         stage_timings=timings,
         usage_by_stage=by_stage,
         usage_by_unit=by_unit,

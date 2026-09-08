@@ -65,6 +65,8 @@ class Settings(BaseSettings):
     plan_min_unit_chars: int | Literal["auto"] = "auto"
     # Few-shot examples per generation call: an upper bound, between 3 and 5.
     max_examples_in_prompt: int = Field(default=5, ge=3, le=5)
+    # Share of question styles, in percent: "vignetta=70,nozionistica=30".
+    style_mix: str = "vignetta=70,nozionistica=30"
     # 'random' = k drawn from the whole pool, seeded by the section so re-runs reproduce;
     # 'first' = the first N of the file, the same for every unit; 'semantic' = closest to the
     # section by embedding, used only when the pool is larger than max_examples_in_prompt.

@@ -47,6 +47,8 @@ def test_generate_produces_planned_count_with_labels_and_usage(
     assert [call[0] for call in generator.calls] == [u.id for u in plan.units if u.questions]
     stored = ctx.store.load_list(ctx.run_id, artifacts.QUESTIONS_GENERATED, QuizItem)
     assert [i.id for i in stored] == [i.id for i in items]
+    styles = {i.style.value for i in items}
+    assert styles == {"vignetta", "nozionistica"}
     for item in items:
         assert item.materia and item.argomento
         assert item.source.section_id in {s.id for s in fixture_document.sections}

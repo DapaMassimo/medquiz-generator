@@ -16,10 +16,16 @@ from medquiz_generator.domain.errors import PlanningError
 from medquiz_generator.domain.models import (
     GenerationPlan,
     PlanUnit,
+    QuestionStyle,
     Section,
     Stage,
     StructuredDocument,
 )
+
+DEFAULT_STYLE_MIX: dict[str, int] = {
+    QuestionStyle.VIGNETTA.value: 70,
+    QuestionStyle.NOZIONISTICA.value: 30,
+}
 
 # Sections shorter than this are pure headings / noise and are never planned on their own.
 NOISE_CHARS = 120
@@ -136,16 +142,63 @@ def choose_min_unit_chars(
     return cap
 
 
+def parse_style_mix(spec: str) -> dict[str, int]:
+    """Parse "vignetta=70,nozionistica=30" into percentages; unknown styles are rejected."""
+    if not spec.strip():
+        return dict(DEFAULT_STYLE_MIX)
+    mix: dict[str, int] = {}
+    for part in spec.split(","):
+        if not part.strip():
+            continue
+        try:
+            name, value = part.split("=")
+            mix[QuestionStyle(name.strip().lower()).value] = int(value)
+        except ValueError as exc:
+            raise PlanningError(
+                f"Invalid style mix {spec!r}: use e.g. 'vignetta=70,nozionistica=30' with "
+                f"styles among {[s.value for s in QuestionStyle]}."
+            ) from exc
+    if sum(mix.values()) <= 0:
+        raise PlanningError(f"Invalid style mix {spec!r}: shares must sum to a positive number.")
+    return mix
+
+
+def allocate_styles(questions_per_unit: list[int], mix: dict[str, int]) -> list[dict[str, int]]:
+    """Split every unit's budget among styles so that the run-level shares match ``mix``.
+
+    Style totals are apportioned with the largest-remainder rule; units are then filled in
+    order, so the mix holds globally while a unit with one question gets one style only.
+    """
+    total = sum(questions_per_unit)
+    names = list(mix)
+    totals = allocate(total, [float(mix[n]) for n in names], minimum=0)
+    remaining = dict(zip(names, totals, strict=True))
+    result: list[dict[str, int]] = []
+    for budget in questions_per_unit:
+        counts = dict.fromkeys(names, 0)
+        for _ in range(budget):
+            # Take the style that is furthest below its target share among those left.
+            name = max(names, key=lambda n: remaining[n])
+            if remaining[name] <= 0:
+                name = names[0]
+            counts[name] += 1
+            remaining[name] -= 1
+        result.append({n: c for n, c in counts.items() if c})
+    return result
+
+
 def build_plan(
     document: StructuredDocument,
     run_id: str,
     total_questions: int,
     *,
     min_unit_chars: int | None = None,
+    style_mix: dict[str, int] | None = None,
 ) -> GenerationPlan:
     """``min_unit_chars=None`` selects the threshold automatically (see choose_min_unit_chars)."""
     if total_questions < 1:
         raise PlanningError("total_questions must be >= 1 (it is a mandatory run parameter).")
+    mix = dict(style_mix) if style_mix else dict(DEFAULT_STYLE_MIX)
     auto = min_unit_chars is None
     if min_unit_chars is None:
         min_unit_chars = choose_min_unit_chars(document, total_questions)
@@ -160,9 +213,10 @@ def build_plan(
     weights = [g.chars / total_chars for g in substantial]
     budget = allocate(total_questions, weights)
 
+    styles_per_unit = allocate_styles(budget, mix)
     units: list[PlanUnit] = []
-    for index, (group, weight, questions) in enumerate(
-        zip(substantial, weights, budget, strict=True), start=1
+    for index, (group, weight, questions, styles) in enumerate(
+        zip(substantial, weights, budget, styles_per_unit, strict=True), start=1
     ):
         first = group.sections[0]
         title = (
@@ -185,6 +239,7 @@ def build_plan(
                 char_count=group.chars,
                 weight=weight,
                 questions=questions,
+                styles=styles,
                 note=note,
             )
         )
@@ -194,15 +249,19 @@ def build_plan(
         total_questions=total_questions,
         min_unit_chars=min_unit_chars,
         min_unit_chars_auto=auto,
+        style_mix=mix,
         units=units,
         skipped_section_ids=skipped,
     )
 
 
 class PlanStage:
-    def __init__(self, min_unit_chars: int | None = None) -> None:
+    def __init__(
+        self, min_unit_chars: int | None = None, style_mix: dict[str, int] | None = None
+    ) -> None:
         """``None`` = choose the merge threshold automatically from the question budget."""
         self._min_unit_chars = min_unit_chars
+        self._style_mix = style_mix
 
     def run(
         self, ctx: RunContext, total_questions: int, *, min_unit_chars: int | None = None
@@ -210,7 +269,13 @@ class PlanStage:
         with ctx.stage(Stage.PLAN):
             document = ctx.require(artifacts.DOCUMENT, StructuredDocument)
             threshold = min_unit_chars if min_unit_chars is not None else self._min_unit_chars
-            plan = build_plan(document, ctx.run_id, total_questions, min_unit_chars=threshold)
+            plan = build_plan(
+                document,
+                ctx.run_id,
+                total_questions,
+                min_unit_chars=threshold,
+                style_mix=self._style_mix,
+            )
             ctx.store.save(ctx.run_id, artifacts.PLAN, plan)
             ctx.update_meta(total_questions=total_questions)
             ctx.log(

@@ -97,6 +97,13 @@ class StructuredDocument(BaseModel):
 # ---------------------------------------------------------------------------- plan
 
 
+class QuestionStyle(StrEnum):
+    """Register of a question: a short clinical case, or a direct factual stem."""
+
+    VIGNETTA = "vignetta"
+    NOZIONISTICA = "nozionistica"
+
+
 class PlanUnit(BaseModel):
     """One generation unit: a section, or a group of small sibling subsections."""
 
@@ -108,6 +115,9 @@ class PlanUnit(BaseModel):
     char_count: int
     weight: float = Field(ge=0.0, description="Share of the document's text (0..1).")
     questions: int = Field(ge=0, description="Questions budgeted for this unit.")
+    styles: dict[str, int] = Field(
+        default_factory=dict, description="Questions per style requested for this unit."
+    )
     note: str = ""
 
 
@@ -121,6 +131,9 @@ class GenerationPlan(BaseModel):
     min_unit_chars: int
     min_unit_chars_auto: bool = Field(
         default=False, description="True when the merge threshold was chosen automatically."
+    )
+    style_mix: dict[str, int] = Field(
+        default_factory=dict, description="Requested share per style, in percent."
     )
     units: list[PlanUnit]
     skipped_section_ids: list[str] = Field(default_factory=list)
@@ -233,6 +246,7 @@ class QuizItem(BaseModel):
     correct_option_id: OptionId
     explanation: str
     difficulty: Difficulty
+    style: QuestionStyle = QuestionStyle.VIGNETTA
     source: SourceRef
     status: StatusInfo = Field(default_factory=StatusInfo)
     model_metadata: ModelMetadata
@@ -259,6 +273,7 @@ class GeneratedQuestion(BaseModel):
     difficulty: Difficulty
     quote: str = Field(description="Verbatim passage from the section supporting the answer.")
     page: int | None = None
+    style: QuestionStyle = QuestionStyle.VIGNETTA
 
 
 class GeneratedBatch(BaseModel):
@@ -467,6 +482,12 @@ class RunReport(BaseModel):
     deterministic_failures: dict[str, int] = Field(default_factory=dict)
     judge_verdicts: dict[str, int] = Field(default_factory=dict)
     duplicates: int = 0
+    styles_requested: dict[str, int] = Field(
+        default_factory=dict, description="Questions per style in the plan."
+    )
+    styles_delivered: dict[str, int] = Field(
+        default_factory=dict, description="Delivered (verified + flagged) questions per style."
+    )
     stage_timings: list[StageTiming] = Field(default_factory=list)
     usage_by_stage: dict[str, UsageSummary] = Field(default_factory=dict)
     usage_by_unit: dict[str, UsageSummary] = Field(default_factory=dict)

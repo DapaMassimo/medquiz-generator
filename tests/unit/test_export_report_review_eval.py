@@ -54,7 +54,8 @@ def test_json_and_xlsx_exporters(tmp_path: Path) -> None:
     sheet = load_workbook(xlsx_path)["Quesiti"]
     rows = list(sheet.iter_rows(values_only=True))
     assert list(rows[0]) == HEADERS
-    assert rows[1][0] == "q1" and rows[1][10] == "A" and rows[2][17] == "flagged"
+    assert rows[1][0] == "q1" and rows[1][11] == "A" and rows[2][18] == "flagged"
+    assert rows[0][4] == "stile" and rows[1][4] == "vignetta"
     assert len(rows) == 3
 
 

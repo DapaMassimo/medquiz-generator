@@ -9,8 +9,10 @@ from medquiz_generator.application.plan import (
     AUTO_MIN_UNIT_CHARS_FLOOR,
     PlanStage,
     allocate,
+    allocate_styles,
     build_plan,
     choose_min_unit_chars,
+    parse_style_mix,
 )
 from medquiz_generator.domain.errors import PlanningError, StageInputMissingError
 from medquiz_generator.domain.models import GenerationPlan, StageTiming, StructuredDocument
@@ -112,6 +114,40 @@ def test_plan_stage_override_beats_configured_threshold(
     assert plan.min_unit_chars == 400 and plan.min_unit_chars_auto is False
     plan = PlanStage(min_unit_chars=None).run(ctx, 4)
     assert plan.min_unit_chars_auto is True
+
+
+def test_parse_style_mix() -> None:
+    assert parse_style_mix("vignetta=70,nozionistica=30") == {"vignetta": 70, "nozionistica": 30}
+    assert parse_style_mix(" Vignetta = 100 ") == {"vignetta": 100}
+    assert parse_style_mix("") == {"vignetta": 70, "nozionistica": 30}
+    with pytest.raises(PlanningError):
+        parse_style_mix("vignetta=70,scenario=30")
+    with pytest.raises(PlanningError):
+        parse_style_mix("vignetta=0")
+
+
+def test_allocate_styles_matches_global_mix_and_unit_budgets() -> None:
+    budgets = [1, 1, 2, 1, 3, 1, 1]  # 10 questions
+    per_unit = allocate_styles(budgets, {"vignetta": 70, "nozionistica": 30})
+    assert [sum(s.values()) for s in per_unit] == budgets
+    totals = {"vignetta": 0, "nozionistica": 0}
+    for s in per_unit:
+        for k, v in s.items():
+            totals[k] += v
+    assert totals == {"vignetta": 7, "nozionistica": 3}
+    assert allocate_styles([], {"vignetta": 100}) == []
+    assert allocate_styles([2], {"vignetta": 100}) == [{"vignetta": 2}]
+
+
+def test_build_plan_records_style_mix(fixture_document: StructuredDocument) -> None:
+    plan = build_plan(fixture_document, "r1", 10, min_unit_chars=400)
+    assert plan.style_mix == {"vignetta": 70, "nozionistica": 30}
+    assert sum(u.styles.get("vignetta", 0) for u in plan.units) == 7
+    assert all(sum(u.styles.values()) == u.questions for u in plan.units)
+    only_factual = build_plan(
+        fixture_document, "r1", 5, min_unit_chars=400, style_mix={"nozionistica": 100}
+    )
+    assert all(u.styles == {"nozionistica": u.questions} for u in only_factual.units if u.questions)
 
 
 def test_build_plan_rejects_non_positive_total(fixture_document: StructuredDocument) -> None:

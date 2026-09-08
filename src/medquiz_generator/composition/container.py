@@ -42,7 +42,7 @@ from medquiz_generator.application.export import ExportStage
 from medquiz_generator.application.generate import GenerateStage
 from medquiz_generator.application.parse import ParseStage
 from medquiz_generator.application.pipeline import Pipeline, Stages
-from medquiz_generator.application.plan import PlanStage
+from medquiz_generator.application.plan import PlanStage, parse_style_mix
 from medquiz_generator.application.report import ReportStage
 from medquiz_generator.application.review import ReviewService
 from medquiz_generator.application.verify import VerifyStage
@@ -194,7 +194,10 @@ class Container:
 
     def plan_stage(self) -> PlanStage:
         configured = self.settings.plan_min_unit_chars
-        return PlanStage(min_unit_chars=None if configured == "auto" else configured)
+        return PlanStage(
+            min_unit_chars=None if configured == "auto" else configured,
+            style_mix=parse_style_mix(self.settings.style_mix),
+        )
 
     def classify_stage(self, ctx: RunContext) -> ClassifyStage:
         return ClassifyStage(self.taxonomy_builder(ctx.tracker))
