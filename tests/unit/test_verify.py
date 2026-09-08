@@ -172,9 +172,12 @@ def test_verify_stage_applies_judge_and_persists(
     assert "q-det-discard" not in judge.calls
     report = ctx.store.load(ctx.run_id, artifacts.VERIFICATION_REPORT, VerificationReport)
     assert len(report.records) == 4
-    # Re-running is idempotent: previously verified items are not judged again.
+    # Re-running is idempotent: previously verified items are not judged again, and the
+    # report still carries one record per item.
     VerifyStage(judge).run(ctx)
     assert len(judge.calls) == 3
+    report = ctx.store.load(ctx.run_id, artifacts.VERIFICATION_REPORT, VerificationReport)
+    assert sorted(r.item_id for r in report.records) == sorted(i.id for i in items)
 
 
 def test_verify_stage_without_judge(ctx: RunContext, fixture_document: StructuredDocument) -> None:

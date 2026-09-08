@@ -22,11 +22,12 @@ from medquiz_generator.domain.models import (
     QuestionStatus,
     QuizItem,
     RunReport,
+    StructuredDocument,
     StyleScores,
     UsageRecord,
 )
 from tests.fakes.fake_llm import FakeStyleJudge
-from tests.unit.test_verify import good_item
+from tests.unit.test_verify import GOOD_QUOTE, good_item
 
 
 def sample_items() -> list[QuizItem]:
@@ -134,13 +135,18 @@ def test_report_aggregates_usage_and_counts(ctx: RunContext) -> None:
     assert build_run_report(ctx).units_covered == 1
 
 
-def test_eval_stage_scores_verified_items_and_compare(ctx: RunContext, tmp_path: Path) -> None:
+def test_eval_stage_scores_verified_items_and_compare(
+    ctx: RunContext, tmp_path: Path, fixture_document: StructuredDocument
+) -> None:
+    ctx.store.save(ctx.run_id, artifacts.DOCUMENT, fixture_document)
     ctx.store.save_list(ctx.run_id, artifacts.QUESTIONS_DEDUPED, list(sample_items()))
     golden = FileGoldenStore(tmp_path / "golden")
     golden.add("old-run", good_item("gold"))
     judge = FakeStyleJudge()
     report = EvalStage(judge, [], golden).run(ctx)
     assert judge.calls == ["q1"]
+    # The style judge receives the context window around the quote, not the bare quote.
+    assert "camice bianco" in judge.passages[0] and len(judge.passages[0]) > len(GOOD_QUOTE)
     assert report.golden_regression_count == 1
     assert report.averages["groundedness"] == 5.0 and report.averages["mean"] == 4.5
     assert ctx.store.exists(ctx.run_id, artifacts.EVAL_REPORT)

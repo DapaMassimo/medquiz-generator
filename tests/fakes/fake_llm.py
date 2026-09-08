@@ -190,15 +190,21 @@ class FakeStyleJudge:
     def __init__(self, scorer: Callable[[QuizItem], StyleScores] | None = None) -> None:
         self._scorer = scorer
         self.calls: list[str] = []
+        self.passages: list[str] = []
 
     @property
     def model_name(self) -> str:
         return "fake-style-judge"
 
     def score(
-        self, item: QuizItem, golden_style: list[SsmExample], golden_regression: list[QuizItem]
+        self,
+        item: QuizItem,
+        golden_style: list[SsmExample],
+        golden_regression: list[QuizItem],
+        passage: str = "",
     ) -> StyleScores:
         self.calls.append(item.id)
+        self.passages.append(passage)
         if self._scorer is not None:
             return self._scorer(item)
         return StyleScores(

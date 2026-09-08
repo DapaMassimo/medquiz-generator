@@ -170,11 +170,15 @@ class LangChainStyleJudge:
         return self._llm.model_name
 
     def score(
-        self, item: QuizItem, golden_style: list[SsmExample], golden_regression: list[QuizItem]
+        self,
+        item: QuizItem,
+        golden_style: list[SsmExample],
+        golden_regression: list[QuizItem],
+        passage: str,
     ) -> StyleScores:
         wire = self._llm.invoke(
             prompts.STYLE_JUDGE_SYSTEM,
-            prompts.style_judge_user_prompt(item, golden_style, golden_regression),
+            prompts.style_judge_user_prompt(item, golden_style, golden_regression, passage),
             prompts.WireStyleScores,
         )
         return StyleScores(**wire.model_dump())

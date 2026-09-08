@@ -19,8 +19,10 @@ from medquiz_generator.domain.models import (
     QuizItem,
     SsmExample,
     Stage,
+    StructuredDocument,
 )
 from medquiz_generator.domain.ports import GoldenStore, StyleJudge
+from medquiz_generator.domain.text import excerpt_around
 
 
 def averages_of(results: list[EvalItemResult]) -> dict[str, float]:
@@ -67,11 +69,16 @@ class EvalStage:
     def run(self, ctx: RunContext, *, limit: int | None = None) -> EvalReport:
         with ctx.stage(Stage.EVAL):
             regression = self._golden_store.load_all()
+            document = ctx.require(artifacts.DOCUMENT, StructuredDocument)
             items = self.candidates(ctx)[:limit]
             results: list[EvalItemResult] = []
             for item in items:
                 ctx.tracker.set_context(unit_id=item.model_metadata.unit_id, item_id=item.id)
-                scores = self._judge.score(item, self._golden_style, regression)
+                # Same bounded context the verify judge sees: groundedness must be judged on
+                # the passage, not on the quote alone.
+                section = document.section_by_id(item.source.section_id)
+                passage = excerpt_around(section.text if section else "", item.source.quote)
+                scores = self._judge.score(item, self._golden_style, regression, passage)
                 results.append(EvalItemResult(item_id=item.id, scores=scores))
             ctx.tracker.set_context()
             report = EvalReport(

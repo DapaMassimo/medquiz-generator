@@ -186,7 +186,9 @@ def test_judge_and_style_and_taxonomy_adapters(fixture_document: StructuredDocum
     style = LangChainStyleJudge(
         structured([{"raw": FakeAIMessage(), "parsed": scores, "parsing_error": None}])
     )
-    assert style.score(good_item(), [], [good_item("g")]).mean == 4.25
+    assert style.score(good_item(), [], [good_item("g")], "passaggio esteso").mean == 4.25
+    style_prompt = prompts.style_judge_user_prompt(good_item(), [], [], "passaggio esteso")
+    assert "### Source passage" in style_prompt and "passaggio esteso" in style_prompt
 
     wire_taxonomy = prompts.WireTaxonomy(
         assignments=[

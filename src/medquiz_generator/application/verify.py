@@ -125,11 +125,23 @@ class VerifyStage:
                     i.id: i
                     for i in ctx.store.load_list(ctx.run_id, artifacts.QUESTIONS_VERIFIED, QuizItem)
                 }
+            # Records of items verified by an earlier (interrupted) invocation are kept, so the
+            # report always covers every item, not just the ones judged this time.
+            previous_records: dict[str, VerificationRecord] = {}
+            if ctx.store.exists(ctx.run_id, artifacts.VERIFICATION_REPORT):
+                previous_records = {
+                    r.item_id: r
+                    for r in ctx.store.load(
+                        ctx.run_id, artifacts.VERIFICATION_REPORT, VerificationReport
+                    ).records
+                }
             records: list[VerificationRecord] = []
             verified: list[QuizItem] = []
             for item in generated:
                 if item.id in previous and previous[item.id].status.status != "generated":
                     verified.append(previous[item.id])
+                    if item.id in previous_records:
+                        records.append(previous_records[item.id])
                     continue
                 ctx.tracker.set_context(unit_id=item.model_metadata.unit_id, item_id=item.id)
                 record = self.verify_item(item, document)

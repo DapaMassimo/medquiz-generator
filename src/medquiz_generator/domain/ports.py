@@ -86,6 +86,7 @@ class StyleJudge(Protocol):
         item: QuizItem,
         golden_style: list[SsmExample],
         golden_regression: list[QuizItem],
+        passage: str,
     ) -> StyleScores: ...
 
 

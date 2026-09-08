@@ -262,7 +262,10 @@ Do not reward medical content that is absent from the passage."""
 
 
 def style_judge_user_prompt(
-    item: QuizItem, golden_style: list[SsmExample], golden_regression: list[QuizItem]
+    item: QuizItem,
+    golden_style: list[SsmExample],
+    golden_regression: list[QuizItem],
+    passage: str = "",
 ) -> str:
     parts = ["### Golden set — real SSM questions\n" + format_examples(golden_style)]
     if golden_regression:
@@ -282,7 +285,8 @@ def style_judge_user_prompt(
         "### Candidate question\n"
         f"{item.question}\n{options}\nCorretta: {item.correct_option_id}\n"
         f"Spiegazione: {item.explanation}\n\n"
-        f"### Cited passage\n{item.source.quote}"
+        f"### Cited quote\n{item.source.quote}\n\n"
+        f"### Source passage (context around the quote)\n{passage or item.source.quote}"
     )
     parts.append("Score the candidate on the four dimensions.")
     return "\n\n".join(parts)
