@@ -8,6 +8,7 @@ from __future__ import annotations
 
 import re
 import unicodedata
+from dataclasses import dataclass
 
 _WS_RE = re.compile(r"\s+")
 _PUNCT_RE = re.compile(r"[^\w\s]", re.UNICODE)
@@ -94,6 +95,53 @@ def excerpt_around(text: str, quote: str, margin: int = 400, fallback_chars: int
         return prepared[:fallback_chars]
     start, end = span
     return prepared[max(0, start - margin) : min(len(prepared), end + margin)]
+
+
+@dataclass(frozen=True)
+class Paragraph:
+    """A paragraph of a passage, with the span of the cited quote inside it (if any)."""
+
+    text: str
+    quote_span: tuple[int, int] | None = None
+
+
+def paragraphs_around(
+    text: str, quote: str, context: int = 2, fallback_paragraphs: int = 4
+) -> tuple[list[Paragraph], bool, bool]:
+    """Whole paragraphs around the one(s) containing ``quote``: the quoted paragraph(s) plus
+    ``context`` paragraphs before and after, never cut mid-sentence. Returns the paragraphs
+    and whether text was left out before / after them. Used for human-facing display; the
+    judges get :func:`excerpt_around` instead.
+
+    When the quote cannot be located, the first ``fallback_paragraphs`` are returned.
+    """
+    prepared = _prepare(text)
+    pieces = [p for p in prepared.split("\n\n") if p.strip()]
+    if not pieces:
+        return [], False, False
+    span = find_normalized(prepared, quote)
+    if span is None:
+        chosen = pieces[:fallback_paragraphs]
+        return [Paragraph(p) for p in chosen], False, len(pieces) > len(chosen)
+    q_start, q_end = span
+    starts: list[int] = []
+    cursor = 0
+    for piece in pieces:
+        offset = prepared.find(piece, cursor)
+        starts.append(offset)
+        cursor = offset + len(piece)
+    first = max(i for i, s in enumerate(starts) if s <= q_start)
+    last = max(i for i, s in enumerate(starts) if s < q_end)
+    lo, hi = max(0, first - context), min(len(pieces), last + context + 1)
+    result: list[Paragraph] = []
+    for i in range(lo, hi):
+        piece, offset = pieces[i], starts[i]
+        overlap = (max(q_start, offset), min(q_end, offset + len(piece)))
+        if overlap[0] < overlap[1]:
+            result.append(Paragraph(piece, (overlap[0] - offset, overlap[1] - offset)))
+        else:
+            result.append(Paragraph(piece))
+    return result, lo > 0, hi < len(pieces)
 
 
 def estimate_tokens(text: str) -> int:

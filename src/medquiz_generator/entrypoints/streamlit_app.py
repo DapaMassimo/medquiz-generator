@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import html
+import re
 from pathlib import Path
 
 import streamlit as st
@@ -13,13 +14,14 @@ from medquiz_generator.composition.container import Container
 from medquiz_generator.domain.errors import MedQuizError
 from medquiz_generator.domain.models import (
     EvalReport,
+    FigureRef,
     QuestionStatus,
     QuizItem,
     RunReport,
     StructuredDocument,
     Taxonomy,
 )
-from medquiz_generator.domain.text import excerpt_around, find_normalized
+from medquiz_generator.domain.text import Paragraph, paragraphs_around
 from medquiz_generator.entrypoints.logsetup import configure_logging
 from medquiz_generator.entrypoints.presentation import render_eval, render_report, render_taxonomy
 
@@ -55,36 +57,78 @@ def option_label(item: QuizItem, option_id: str) -> str:
     return f"{option_id}. {text}"
 
 
-def highlighted_passage(document: StructuredDocument | None, item: QuizItem) -> str:
-    """Section excerpt with the cited quote highlighted (HTML-escaped)."""
-    section = document.section_by_id(item.source.section_id) if document else None
-    if section is None:
-        return html.escape(item.source.quote)
-    passage = excerpt_around(section.text, item.source.quote, margin=600)
-    span = find_normalized(passage, item.source.quote)
-    if span is None:
-        return html.escape(passage)
-    start, end = span
+_CAPTION = re.compile(r"^(figura|fig\.|tabella|tab\.)\s*\d", re.IGNORECASE)
+
+
+def highlighted_html(paragraph: Paragraph) -> str:
+    """One paragraph as HTML, with the cited span wrapped in <mark>."""
+    if paragraph.quote_span is None:
+        return html.escape(paragraph.text)
+    start, end = paragraph.quote_span
     return (
-        html.escape(passage[:start])
+        html.escape(paragraph.text[:start])
         + "<mark>"
-        + html.escape(passage[start:end])
+        + html.escape(paragraph.text[start:end])
         + "</mark>"
-        + html.escape(passage[end:])
+        + html.escape(paragraph.text[end:])
     )
 
 
+def figure_for_caption(
+    document: StructuredDocument, section_id: str, caption: str
+) -> FigureRef | None:
+    """The extracted figure whose caption opens this paragraph, if any."""
+    for figure in document.figures:
+        if (
+            figure.section_id == section_id
+            and figure.caption
+            and caption.startswith(figure.caption)
+        ):
+            return figure
+    return None
+
+
 def source_block(item: QuizItem, document: StructuredDocument | None) -> None:
+    """The cited passage, paragraph by paragraph: captions set apart (with the figure
+    itself when it was extracted), tables rendered as tables, the quote highlighted."""
     st.markdown(
         f"**Fonte:** {item.source.section_path}  \n"
         f"**Pagine sezione:** {item.source.page_start}-{item.source.page_end}"
         + (f" · **pagina citata:** {item.source.page}" if item.source.page else "")
     )
-    st.markdown(
-        f"<div style='border-left:4px solid #0F766E;padding:0.5rem 0.8rem;"
-        f"background:#f5fbfa;white-space:pre-wrap'>{highlighted_passage(document, item)}</div>",
-        unsafe_allow_html=True,
-    )
+    section = document.section_by_id(item.source.section_id) if document else None
+    if document is None or section is None:
+        st.markdown(f"> {item.source.quote}")
+        return
+    paragraphs, before, after = paragraphs_around(section.text, item.source.quote)
+    run_dir = get_container().store.run_dir(item.model_metadata.run_id)
+    with st.container(border=True):
+        if before:
+            st.caption("…")
+        for paragraph in paragraphs:
+            if paragraph.text.lstrip().startswith("|"):
+                st.markdown(paragraph.text)
+                continue
+            if _CAPTION.match(paragraph.text) and paragraph.quote_span is None:
+                figure = figure_for_caption(document, section.id, paragraph.text)
+                icon = "🖼️" if paragraph.text.lower().startswith("fig") else "📋"
+                st.markdown(
+                    f"<div style='color:#6b7280;font-style:italic;font-size:0.9em'>"
+                    f"{icon} {html.escape(paragraph.text)}</div>",
+                    unsafe_allow_html=True,
+                )
+                if figure is not None and (run_dir / figure.path).exists():
+                    st.image(str(run_dir / figure.path), width=320)
+                continue
+            style = "background:#f5fbfa;border-left:4px solid #0F766E;padding:0.4rem 0.8rem"
+            if paragraph.quote_span is None:
+                style = "padding:0.2rem 0.8rem"
+            st.markdown(
+                f"<div style='{style};white-space:pre-wrap'>{highlighted_html(paragraph)}</div>",
+                unsafe_allow_html=True,
+            )
+        if after:
+            st.caption("…")
 
 
 # ------------------------------------------------------------------- sidebar
