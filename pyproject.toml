@@ -20,6 +20,8 @@ dependencies = [
     "torchvision>=0.29",
     "typer>=0.15.0",
     "onnxruntime>=1.29.0",
+    # Page rendering for the review UI (also a Docling dependency).
+    "pypdfium2>=5",
 ]
 
 [project.scripts]
@@ -74,7 +76,7 @@ mypy_path = "src"
 packages = ["medquiz_generator"]
 
 [[tool.mypy.overrides]]
-module = ["docling.*", "docling_core.*", "streamlit.*", "langsmith.*"]
+module = ["docling.*", "docling_core.*", "streamlit.*", "langsmith.*", "pypdfium2.*", "PIL.*"]
 ignore_missing_imports = true
 
 [tool.pytest.ini_options]

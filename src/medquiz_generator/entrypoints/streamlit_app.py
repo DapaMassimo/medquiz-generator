@@ -17,12 +17,14 @@ from medquiz_generator.domain.models import (
     FigureRef,
     QuestionStatus,
     QuizItem,
+    RunMeta,
     RunReport,
     StructuredDocument,
     Taxonomy,
 )
 from medquiz_generator.domain.text import Paragraph, paragraphs_around
 from medquiz_generator.entrypoints.logsetup import configure_logging
+from medquiz_generator.entrypoints.pagerender import render_page
 from medquiz_generator.entrypoints.presentation import render_eval, render_report, render_taxonomy
 
 st.set_page_config(page_title="MedQuiz Generator", page_icon="🩺", layout="wide")
@@ -129,6 +131,33 @@ def source_block(item: QuizItem, document: StructuredDocument | None) -> None:
             )
         if after:
             st.caption("…")
+    page_block(item)
+
+
+@st.cache_data(show_spinner=False)
+def rendered_page(
+    pdf_path: str, mtime: float, pages: tuple[int, ...], quote: str
+) -> tuple[bytes, int] | None:
+    return render_page(Path(pdf_path), pages, quote)
+
+
+def page_block(item: QuizItem) -> None:
+    """The original PDF page the quote comes from, with the quote highlighted: tables and
+    boxed lists lose their layout as text, the page never does."""
+    container = get_container()
+    run_id = item.model_metadata.run_id
+    if not container.store.exists(run_id, artifacts.RUN_META):
+        return
+    pdf_path = Path(container.store.load(run_id, artifacts.RUN_META, RunMeta).source_path)
+    if not pdf_path.exists():
+        return
+    first = item.source.page or item.source.page_start
+    pages = tuple(dict.fromkeys([first, *range(item.source.page_start, item.source.page_end + 1)]))
+    result = rendered_page(str(pdf_path), pdf_path.stat().st_mtime, pages, item.source.quote)
+    if result is None:
+        return
+    png, page_no = result
+    st.image(png, caption=f"Pagina {page_no} del PDF originale, citazione evidenziata")
 
 
 # ------------------------------------------------------------------- sidebar
