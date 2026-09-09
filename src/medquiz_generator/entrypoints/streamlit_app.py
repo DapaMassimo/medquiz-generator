@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import html
 import re
+from collections import Counter
 from pathlib import Path
 
 import streamlit as st
@@ -250,13 +251,29 @@ def sidebar(container: Container) -> str | None:
 # ----------------------------------------------------------------- simulator
 
 
-def simulator_tab(items: list[QuizItem], document: StructuredDocument | None) -> None:
-    deliverable = [i for i in items if i.status.status == QuestionStatus.VERIFIED]
-    flagged = [i for i in items if i.status.status == QuestionStatus.FLAGGED]
+def simulator_tab(
+    items: list[QuizItem], document: StructuredDocument | None, approved: set[str]
+) -> None:
+    """Verified questions plus the flagged ones a reviewer has approved; the toggle adds the
+    flagged ones still waiting for review (image questions start there)."""
+    deliverable = [
+        i
+        for i in items
+        if i.status.status == QuestionStatus.VERIFIED
+        or (i.status.status == QuestionStatus.FLAGGED and i.id in approved)
+    ]
+    pending = [
+        i for i in items if i.status.status == QuestionStatus.FLAGGED and i.id not in approved
+    ]
     col1, col2, col3, col4 = st.columns([2, 2, 1, 1])
     with col3:
-        show_flagged = st.toggle("Includi flaggati", value=False)
-    pool = deliverable + (flagged if show_flagged else [])
+        show_flagged = st.toggle(
+            "Includi flaggati",
+            value=False,
+            help=f"{len(pending)} quesiti in attesa di revisione (i quesiti su immagine partono "
+            "da qui). Quelli approvati nella Revisione compaiono sempre.",
+        )
+    pool = deliverable + (pending if show_flagged else [])
     materie = sorted({i.materia for i in pool if i.materia})
     with col1:
         materia = st.selectbox("Materia", ["Tutte", *materie])
@@ -427,21 +444,60 @@ def review_tab(
 # -------------------------------------------------------------------- report
 
 
-def report_tab(container: Container, run_id: str) -> None:
-    ctx = container.context(run_id)
-    report: RunReport = container.report_stage().run(ctx)
-    m1, m2, m3, m4, m5 = st.columns(5)
-    m1.metric("Verificati", report.verified)
-    m2.metric("Flaggati", report.flagged)
-    m3.metric("Scartati", report.discarded)
-    m4.metric("Costo totale (USD)", f"{report.usage_total.cost_usd:.4f}")
-    m5.metric(
-        "Costo / quesito consegnato",
-        f"{report.cost_per_delivered_question_usd:.4f}"
+def stage_cost(report: RunReport, stage: str) -> str:
+    usage = report.usage_by_stage.get(stage)
+    return f"{usage.cost_usd:.3f}" if usage is not None else "—"
+
+
+def run_summary(report: RunReport, items: list[QuizItem]) -> None:
+    """Headline numbers of the run: outcomes, figures, cost per stage."""
+    st.subheader("Quesiti")
+    q1, q2, q3, q4 = st.columns(4)
+    q1.metric("Generati", report.generated)
+    q2.metric("Accettati", report.verified, help="Hanno superato tutti i controlli.")
+    q3.metric("Flaggati", report.flagged, help="Corretti ma con un dubbio: da revisionare.")
+    q4.metric("Scartati", report.discarded)
+
+    st.subheader("Immagini")
+    f1, f2, f3 = st.columns(3)
+    f1.metric("Figure estratte", report.figures_total)
+    f2.metric("Immagini cliniche", report.figures_question_worthy, help="Question-worthy.")
+    f3.metric("Quesiti su immagine", report.image_questions)
+
+    st.subheader("Costi (USD)")
+    c1, c2, c3, c4, c5, c6 = st.columns(6)
+    c1.metric("Tassonomia", stage_cost(report, "classify"))
+    c2.metric("Visione", stage_cost(report, "figures"))
+    c3.metric("Generazione", stage_cost(report, "generate"))
+    c4.metric("Verifica", stage_cost(report, "verify"))
+    c5.metric("Totale", f"{report.usage_total.cost_usd:.3f}")
+    c6.metric(
+        "Per quesito consegnato",
+        f"{report.cost_per_delivered_question_usd:.3f}"
         if report.cost_per_delivered_question_usd is not None
         else "n/d",
     )
-    st.code(render_report(report), language="text")
+
+    delivered = [
+        i for i in items if i.status.status in (QuestionStatus.VERIFIED, QuestionStatus.FLAGGED)
+    ]
+    if delivered:
+        styles = Counter(i.style.value for i in delivered if i.image is None)
+        levels = Counter(i.difficulty.value for i in delivered)
+        st.caption(
+            "Stili (quesiti sul testo): "
+            + ", ".join(f"{k} {v}" for k, v in sorted(styles.items()))
+            + " · Difficoltà stimata dal generatore: "
+            + ", ".join(f"{k} {levels.get(k, 0)}" for k in ("facile", "media", "difficile"))
+        )
+
+
+def report_tab(container: Container, run_id: str) -> None:
+    ctx = container.context(run_id)
+    report: RunReport = container.report_stage().run(ctx)
+    run_summary(report, container.review.items(run_id))
+    with st.expander("Report completo"):
+        st.code(render_report(report), language="text")
     if container.store.exists(run_id, artifacts.EVAL_REPORT):
         eval_report = container.store.load(run_id, artifacts.EVAL_REPORT, EvalReport)
         st.subheader("Eval (golden set)")
@@ -486,7 +542,9 @@ def main() -> None:
         ["🎓 Simulatore", "🔍 Revisione", "📊 Report", "🗂️ Tassonomia"]
     )
     with tab_sim:
-        simulator_tab(items, document)
+        decisions = container.review.state(run_id).decisions
+        approved = {k for k, d in decisions.items() if d.decision == "approved"}
+        simulator_tab(items, document, approved)
     with tab_rev:
         review_tab(container, run_id, items, document)
     with tab_rep:

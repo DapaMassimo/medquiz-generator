@@ -208,9 +208,10 @@ delta per dimension.
 
 `make run` opens two main tabs:
 
-- **Simulatore** — the client-facing preview: questions one at a time or as a list, filter by
-  materia/argomento, pick an answer, reveal the correct option, explanation and the cited
-  source passage; running score.
+- **Simulatore** — the client-facing preview: verified questions plus the flagged ones a
+  reviewer approved (a toggle adds the rest), one at a time or as a list, filter by
+  materia/argomento, pick an answer, reveal the correct option, explanation, the cited
+  passage and the original PDF page with the quote highlighted; running score.
 - **Revisione** — table with status/filters; detail with the highlighted passage side by side;
   approve/reject with a note (persisted in `review_decisions.json`); export of approved items
   only; *Promuovi al golden set* for approved items.
