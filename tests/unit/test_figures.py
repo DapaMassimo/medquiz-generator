@@ -42,6 +42,71 @@ def test_build_outline_attaches_figures_to_the_current_section() -> None:
     assert figures[1].section_id == sections[1].id
 
 
+def test_numbered_figure_moves_to_the_section_that_cites_it() -> None:
+    # The figure sits at the top of the page, before the heading of the section discussing it.
+    items = [
+        OutlineItem("heading", "Sindrome di Mallory-Weiss", 51, level=1),
+        OutlineItem("text", "Lacerazioni longitudinali della mucosa.", 51),
+        OutlineItem("figure", "Figura 25.18 Aspetto endoscopico.", 52, ref="a/f001.png"),
+        OutlineItem("text", "Figura 25.18 Aspetto endoscopico.", 52),  # caption kept as text
+        OutlineItem("heading", "Esofagite eosinofila", 52, level=1),
+        OutlineItem("text", "Anelli concentrici multipli (Figura 25.18).", 52),
+        OutlineItem("heading", "Bibliografia", 53, level=1),
+        OutlineItem("text", "Vedi anche Figura 25.18 altrove.", 53),
+    ]
+    sections, figures = build_outline(items, root_title="Doc")
+    by_title = {s.title: s.id for s in sections}
+    # Cited by two later sections: the closest one to the layout position wins.
+    assert figures[0].section_id == by_title["Esofagite eosinofila"]
+
+
+def test_figure_keeps_its_section_when_cited_there_or_unnumbered() -> None:
+    items = [
+        OutlineItem("heading", "Acalasia", 1, level=1),
+        OutlineItem("text", "Esofagogramma (Figura 25.4).", 1),
+        OutlineItem("figure", "Figura 25.4 Becco di uccello.", 1, ref="a/f001.png"),
+        OutlineItem("figure", "", 1, ref="a/f002.png"),
+        OutlineItem("heading", "Terapia", 2, level=1),
+        OutlineItem("text", "Come in Figura 25.4, la dilatazione.", 2),
+    ]
+    sections, figures = build_outline(items, root_title="Doc")
+    assert figures[0].section_id == sections[0].id
+    assert figures[1].section_id == sections[0].id
+
+
+def test_figure_is_not_moved_to_a_section_on_another_page() -> None:
+    # Zenker's diverticulum radiograph printed inside its own section (pages 25-28); the only
+    # numbered citation comes from the next section, on page 28. Layout wins.
+    items = [
+        OutlineItem("heading", "Diverticolo di Zenker", 25, level=1),
+        OutlineItem("text", "Testo sul diverticolo.", 26),
+        OutlineItem("figure", "Figura 25.9 Diverticolo esofageo.", 27, ref="a/f001.png"),
+        OutlineItem("text", "Figura 25.9 Diverticolo esofageo.", 27),
+        OutlineItem("text", "Altro testo.", 28),
+        OutlineItem("heading", "Diverticoli dell'esofago medio", 28, level=1),
+        OutlineItem("text", "Evidenziati con bario (Figura 25.9).", 28),
+    ]
+    sections, figures = build_outline(items, root_title="Doc")
+    assert figures[0].section_id == sections[0].id
+
+
+def test_figure_pushed_to_a_later_page_goes_back_to_the_earlier_section_citing_it() -> None:
+    # Candida oesophagitis is discussed on page 48; its endoscopic picture only fitted on
+    # page 50, inside the CMV section, which never mentions it.
+    items = [
+        OutlineItem("heading", "Esofagite da Candida", 48, level=1),
+        OutlineItem("text", "Placche biancastre (Figura 25.17).", 48),
+        OutlineItem("heading", "Herpes simplex", 49, level=1),
+        OutlineItem("text", "Vescicole.", 49),
+        OutlineItem("heading", "Cytomegalovirus", 49, level=1),
+        OutlineItem("text", "Ulcere profonde.", 49),
+        OutlineItem("figure", "Figura 25.17 Esofagite da Candida.", 50, ref="a/f001.png"),
+        OutlineItem("text", "Figura 25.17 Esofagite da Candida.", 50),
+    ]
+    sections, figures = build_outline(items, root_title="Doc")
+    assert figures[0].section_id == sections[0].id
+
+
 @dataclass
 class Label:
     value: str

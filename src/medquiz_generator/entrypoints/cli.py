@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import io
 import subprocess
 import sys
 from collections.abc import Callable
@@ -86,6 +87,10 @@ def main(
 ) -> None:
     settings = container().settings
     configure_logging(log_level or settings.log_level, json_logs=json_logs or settings.log_json)
+    # Windows consoles may not be UTF-8: degrade unencodable characters instead of crashing.
+    for stream in (sys.stdout, sys.stderr):
+        if isinstance(stream, io.TextIOWrapper):
+            stream.reconfigure(errors="replace")
 
 
 @app.command()

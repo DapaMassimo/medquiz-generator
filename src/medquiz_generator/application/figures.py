@@ -34,7 +34,19 @@ class FiguresStage:
             figures: list[FigureRef] = []
             for figure in document.figures:
                 if figure.id in previous and previous[figure.id].kind != "unclassified":
-                    figures.append(previous[figure.id])
+                    # Reuse the assessment, but take placement (section, caption) from the
+                    # current document: a re-parse may have moved the figure.
+                    done = previous[figure.id]
+                    figures.append(
+                        figure.model_copy(
+                            update={
+                                "kind": done.kind,
+                                "description": done.description,
+                                "question_worthy": done.question_worthy,
+                                "triage_reason": done.triage_reason,
+                            }
+                        )
+                    )
                     continue
                 image_path = run_dir / figure.path
                 if self._triage is None or not image_path.exists():

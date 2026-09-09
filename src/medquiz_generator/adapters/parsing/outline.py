@@ -163,4 +163,43 @@ def build_outline(
         )
         for index, (node, item) in enumerate(figure_nodes, start=1)
     ]
-    return sections, figures
+    return sections, [reassign_by_citation(f, sections) for f in figures]
+
+
+_CAPTION_NUMBER = re.compile(r"^(?:figura|fig\.?)\s*(\d+(?:\.\d+)*)", re.IGNORECASE)
+
+
+def reassign_by_citation(figure: FigureRef, sections: list[Section]) -> FigureRef:
+    """Attach a numbered figure to the section whose prose cites it, not merely the one it
+    was laid out in.
+
+    A figure printed at the top of a page often precedes the heading of the section that
+    discusses it, so reading order attaches it to the previous section. When the caption
+    carries a number ("Figura 25.18"), a section that both spans the figure's page and
+    mentions that number in its prose (the caption itself does not count) is better
+    evidence; among such sections the one closest to the layout position wins. Failing
+    that, a figure pushed to a later page than its section (the other common layout
+    artefact) goes to the nearest *earlier* section that cites it; a citation from a later
+    section alone is not enough to move a figure. Figures without a number, or never
+    cited, keep their section.
+    """
+    match = _CAPTION_NUMBER.match(figure.caption)
+    if match is None or not sections:
+        return figure
+    number = match.group(1)
+    citation = re.compile(rf"\bfig(?:ura|\.)\s*{re.escape(number)}(?![\d.])", re.IGNORECASE)
+    index_by_id = {s.id: i for i, s in enumerate(sections)}
+    current = index_by_id.get(figure.section_id)
+    anchor = current if current is not None else 0
+    citing = [
+        i for i, s in enumerate(sections) if citation.search(s.text.replace(figure.caption, ""))
+    ]
+    if not citing or current in citing:
+        return figure
+    same_page = [i for i in citing if sections[i].page_start <= figure.page <= sections[i].page_end]
+    earlier = [i for i in citing if i < anchor]
+    candidates = same_page or earlier
+    if not candidates:
+        return figure
+    best = min(candidates, key=lambda i: (abs(i - anchor), i))
+    return figure.model_copy(update={"section_id": sections[best].id})

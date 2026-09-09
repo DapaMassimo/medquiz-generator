@@ -73,7 +73,13 @@ def deterministic_checks(item: QuizItem, document: StructuredDocument) -> list[s
     if len(quote.split()) > MAX_QUOTE_WORDS:
         failures.append("quote_too_long")
     page = item.source.page
-    if page is not None and not (section.page_start <= page <= section.page_end):
+    # A figure may be printed on a page outside the range of the section discussing it.
+    figure_page = item.image.page if item.image is not None else None
+    if (
+        page is not None
+        and page != figure_page
+        and not (section.page_start <= page <= section.page_end)
+    ):
         failures.append("page_out_of_range")
     return failures
 

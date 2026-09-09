@@ -129,7 +129,9 @@ def build_run_report(ctx: RunContext) -> RunReport:
         judge_verdicts=dict(judge_verdicts),
         duplicates=duplicates,
         styles_requested=styles_requested,
-        styles_delivered=dict(Counter(i.style.value for i in delivered)),
+        # Image questions are generated on top of the plan, so they are left out of the
+        # requested-vs-delivered style comparison.
+        styles_delivered=dict(Counter(i.style.value for i in delivered if i.image is None)),
         figures_total=figures_total,
         figures_question_worthy=figures_worthy,
         image_questions=sum(1 for i in items if i.image is not None),

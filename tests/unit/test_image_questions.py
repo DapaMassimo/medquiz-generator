@@ -111,3 +111,18 @@ def test_xlsx_export_carries_the_image_path(tmp_path: Path) -> None:
     rows = list(load_workbook(path)["Quesiti"].iter_rows(values_only=True))
     assert rows[0][-1] == "immagine"
     assert rows[1][-1] == "assets/figures/f001.png" and rows[2][-1] in ("", None)
+
+
+def test_report_leaves_image_questions_out_of_delivered_styles(ctx: RunContext) -> None:
+    from medquiz_generator.application.report import build_run_report
+
+    plain = good_item("u001-q01").with_status(QuestionStatus.VERIFIED, "ok")
+    on_figure = (
+        good_item("fig-f001-q01")
+        .model_copy(update={"image": ImageRef(figure_id="f001", path="a/f001.png", caption="c")})
+        .with_status(QuestionStatus.FLAGGED, "image question: human review required")
+    )
+    ctx.store.save_list(ctx.run_id, artifacts.QUESTIONS_VERIFIED, [plain, on_figure])
+    report = build_run_report(ctx)
+    assert report.image_questions == 1
+    assert report.styles_delivered == {plain.style.value: 1}

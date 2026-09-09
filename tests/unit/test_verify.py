@@ -122,6 +122,18 @@ def test_page_out_of_range_is_soft(fixture_document: StructuredDocument) -> None
     assert status == QuestionStatus.FLAGGED and "page_out_of_range" in reason
 
 
+def test_image_question_may_cite_the_figure_page_outside_the_section(
+    fixture_document: StructuredDocument,
+) -> None:
+    from medquiz_generator.domain.models import ImageRef
+
+    image = ImageRef(figure_id="f001", path="assets/figures/f001.png", page=9)
+    item = good_item(image=image, source=good_item().source.model_copy(update={"page": 9}))
+    assert deterministic_checks(item, fixture_document) == []
+    other = good_item(image=image, source=good_item().source.model_copy(update={"page": 8}))
+    assert deterministic_checks(other, fixture_document) == ["page_out_of_range"]
+
+
 def test_unknown_section(fixture_document: StructuredDocument) -> None:
     item = good_item(source=good_item().source.model_copy(update={"section_id": "s999"}))
     assert deterministic_checks(item, fixture_document) == ["section_unknown"]
