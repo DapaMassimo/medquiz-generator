@@ -177,3 +177,17 @@ def test_plan_stage_persists_and_requires_document(
     assert [(t.stage, t.status) for t in timings] == [("plan", "failed"), ("plan", "ok")]
     assert timings[0].error is not None and timings[0].error.startswith("StageInputMissingError")
     assert timings[1].error is None
+
+
+def test_plan_stage_style_mix_override_beats_configured_mix(
+    ctx: RunContext, fixture_document: StructuredDocument
+) -> None:
+    ctx.store.save(ctx.run_id, artifacts.DOCUMENT, fixture_document)
+    stage = PlanStage(min_unit_chars=400, style_mix={"vignetta": 70, "nozionistica": 30})
+    plan = stage.run(ctx, 10, style_mix={"vignetta": 20, "nozionistica": 80})
+    assert plan.style_mix == {"vignetta": 20, "nozionistica": 80}
+    assert sum(u.styles.get("vignetta", 0) for u in plan.units) == 2
+    assert PlanStage(style_mix={"vignetta": 70, "nozionistica": 30}).run(ctx, 10).style_mix == {
+        "vignetta": 70,
+        "nozionistica": 30,
+    }

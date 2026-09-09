@@ -264,7 +264,12 @@ class PlanStage:
         self._style_mix = style_mix
 
     def run(
-        self, ctx: RunContext, total_questions: int, *, min_unit_chars: int | None = None
+        self,
+        ctx: RunContext,
+        total_questions: int,
+        *,
+        min_unit_chars: int | None = None,
+        style_mix: dict[str, int] | None = None,
     ) -> GenerationPlan:
         with ctx.stage(Stage.PLAN):
             document = ctx.require(artifacts.DOCUMENT, StructuredDocument)
@@ -274,7 +279,7 @@ class PlanStage:
                 ctx.run_id,
                 total_questions,
                 min_unit_chars=threshold,
-                style_mix=self._style_mix,
+                style_mix=style_mix if style_mix is not None else self._style_mix,
             )
             ctx.store.save(ctx.run_id, artifacts.PLAN, plan)
             ctx.update_meta(total_questions=total_questions)

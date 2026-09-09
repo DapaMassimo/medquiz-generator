@@ -37,11 +37,9 @@ from tests.fakes.fake_container import make_settings
 
 def test_settings_prefix_and_csv(monkeypatch) -> None:  # type: ignore[no-untyped-def]
     monkeypatch.setenv("MQ_GENERATOR_MODEL", "gpt-4.1-mini")
-    monkeypatch.setenv("MQ_LLM_MODELS", "a, b ,c")
     monkeypatch.setenv("OPENAI_API_KEY", "sk-test")
     settings = Settings(_env_file=None)  # type: ignore[call-arg]
     assert settings.generator_model == "gpt-4.1-mini"
-    assert settings.llm_models == ["a", "b", "c"]
     assert settings.openai_api_key == "sk-test"
     assert settings.docling_do_ocr is False
     assert settings.judge_model == "gpt-4o-mini"

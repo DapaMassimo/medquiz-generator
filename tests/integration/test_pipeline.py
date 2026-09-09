@@ -41,8 +41,10 @@ def test_full_pipeline_on_fakes(tmp_path: Path, fixture_document) -> None:  # ty
     assert report.usage_total.calls > 0 and report.usage_total.cost_usd > 0
     assert report.cost_per_delivered_question_usd is not None
     assert {"generate", "verify", "dedup"} <= set(report.usage_by_stage)
+    # Figures are extracted and triaged by default, right after parse.
     assert [t.stage for t in report.stage_timings] == [
         "parse",
+        "figures",
         "plan",
         "classify",
         "generate",

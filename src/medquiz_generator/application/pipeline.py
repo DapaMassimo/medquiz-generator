@@ -48,12 +48,13 @@ class Pipeline:
         use_cache: bool = True,
         include_flagged: bool | None = None,
         min_unit_chars: int | None = None,
+        style_mix: dict[str, int] | None = None,
     ) -> RunReport:
         stages = self._stages
         stages.parse.run(ctx, pdf_path, use_cache=use_cache)
         if stages.figures is not None:
             stages.figures.run(ctx)
-        stages.plan.run(ctx, total_questions, min_unit_chars=min_unit_chars)
+        stages.plan.run(ctx, total_questions, min_unit_chars=min_unit_chars, style_mix=style_mix)
         stages.classify.run(ctx)
         stages.report.run(ctx)
         stages.generate.run(ctx)

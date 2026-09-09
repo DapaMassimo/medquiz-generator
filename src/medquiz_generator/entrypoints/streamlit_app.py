@@ -10,6 +10,7 @@ import streamlit as st
 
 from medquiz_generator.application import artifacts
 from medquiz_generator.application.context import RunContext
+from medquiz_generator.application.plan import parse_style_mix
 from medquiz_generator.composition.container import Container
 from medquiz_generator.domain.errors import MedQuizError
 from medquiz_generator.domain.models import (
@@ -183,6 +184,16 @@ def sidebar(container: Container) -> str | None:
         total = st.number_input(
             "Numero totale di quesiti (obbligatorio)", min_value=1, value=None, step=1
         )
+        default_mix = parse_style_mix(container.settings.style_mix) or {"vignetta": 70}
+        vignette_pct = st.slider(
+            "Vignette cliniche (%)",
+            min_value=0,
+            max_value=100,
+            value=int(default_mix.get("vignetta", 70)),
+            step=5,
+            help="Quota di quesiti a caso clinico; il resto sono domande dirette sul concetto. "
+            "Vale per i quesiti sul testo: quelli sulle immagini cliniche si aggiungono a parte.",
+        )
         include_flagged = st.checkbox(
             "Includi i quesiti flaggati nell'export",
             value=container.settings.export_include_flagged,
@@ -207,7 +218,14 @@ def sidebar(container: Container) -> str | None:
                     with st.spinner(f"Pipeline in esecuzione (run {new_id})…"):
                         try:
                             report = container.pipeline(ctx).run(
-                                ctx, pdf_path, int(total), include_flagged=include_flagged
+                                ctx,
+                                pdf_path,
+                                int(total),
+                                include_flagged=include_flagged,
+                                style_mix={
+                                    "vignetta": vignette_pct,
+                                    "nozionistica": 100 - vignette_pct,
+                                },
                             )
                         except MedQuizError as exc:
                             st.error(str(exc))
@@ -218,6 +236,14 @@ def sidebar(container: Container) -> str | None:
                                 f"({report.usage_total.cost_usd:.4f} USD)"
                             )
                             st.rerun()
+    s = container.settings
+    st.sidebar.caption(
+        "**Modelli in uso** (da `.env`)  \n"
+        f"generazione: `{s.generator_model}`  \n"
+        f"verifica: `{s.judge_model}`  \n"
+        f"tassonomia: `{s.taxonomy_model}`  \n"
+        f"visione: `{s.vision_model}`"
+    )
     return run_id
 
 

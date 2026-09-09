@@ -2,10 +2,10 @@
 
 from __future__ import annotations
 
-from typing import Annotated, Literal
+from typing import Literal
 
-from pydantic import Field, field_validator
-from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
+from pydantic import Field
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -30,19 +30,6 @@ class Settings(BaseSettings):
     embedding_model: str = "text-embedding-3-small"
     llm_temperature: float = 0.1
     llm_max_retries: int = 3
-    llm_models: Annotated[list[str], NoDecode] = [
-        "gpt-4o-mini",
-        "gpt-4o",
-        "gpt-4.1-mini",
-        "gpt-4.1",
-    ]
-
-    @field_validator("llm_models", mode="before")
-    @classmethod
-    def _split_csv(cls, value: object) -> object:
-        if isinstance(value, str):
-            return [item.strip() for item in value.split(",") if item.strip()]
-        return value
 
     # Paths
     runs_dir: str = "runs"
@@ -68,7 +55,7 @@ class Settings(BaseSettings):
     # Share of question styles, in percent: "vignetta=70,nozionistica=30".
     style_mix: str = "vignetta=70,nozionistica=30"
     # Figures: extract them from the PDF as run assets and triage them with a vision model.
-    images_enabled: bool = False
+    images_enabled: bool = True
     images_min_side_px: int = 80
     vision_model: str = "gpt-4.1"
     # Image questions never reach "verified" on their own: a reviewer must confirm them.

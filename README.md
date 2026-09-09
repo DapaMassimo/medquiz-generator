@@ -216,7 +216,8 @@ delta per dimension.
   only; *Promuovi al golden set* for approved items.
 
 Plus *Report* (run report, eval, downloads) and *Tassonomia* (the extracted taxonomy). A new
-run can be launched from the sidebar (PDF + mandatory total).
+run can be launched from the sidebar (PDF, mandatory total, share of clinical
+vignettes); the sidebar also lists the models in use per role, read-only (set in `.env`).
 
 ## Development
 
@@ -246,9 +247,9 @@ report aggregation, review/promotion, eval comparison, the CLI and the full pipe
 - **Provided taxonomy**: `TaxonomyBuilder` is a port; a builder fed by a client-supplied
   taxonomy can replace the extracted one without touching the pipeline (not implemented).
 
-## Image questions (opt-in)
+## Image questions
 
-With `MQ_IMAGES_ENABLED=true` the parse stage saves every figure of the PDF as
+Enabled by default (`MQ_IMAGES_ENABLED`): the parse stage saves every figure of the PDF as
 `runs/<run_id>/assets/figures/fNNN.png` (icons skipped) and the `figures` stage asks a
 vision model (`MQ_VISION_MODEL`) to classify each one. Only **clinical images** (ECG,
 radiology, ultrasound, histology, endoscopy, clinical photos) are `question_worthy`;
